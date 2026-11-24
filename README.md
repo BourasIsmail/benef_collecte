@@ -41,7 +41,7 @@ La liste exacte des comptes est visible dans l'écran *Utilisateurs* (admin).
 Chargées au premier démarrage : **12 régions, 82 provinces, 1 210 associations** (`backend/src/main/resources/seed/*.json`). Les bénéficiaires de l'Excel ne sont **pas** importés : l'application démarre sans bénéficiaire.
 - Les 81 provinces du fichier + **Aousserd** (absente du fichier, ajoutée sans association) : à confirmer.
 - Les noms arabes des provinces et les rattachements aux régions sont proposés par nous : à relire.
-- Les associations n'ont pas de catégorie ciblée : à renseigner par chaque province.
+- Les associations n'ont pas de catégorie : à renseigner par chaque province.
 
 ## Fonctionnement
 
@@ -52,11 +52,12 @@ Clé = `tri(nom FR, prénom FR normalisés) | date de naissance`. La normalisati
 - Un doublon situé **hors de votre périmètre** est signalé sans révéler son contenu.
 - Le CIN est facultatif, mais unique et au format `AB123456` quand il est saisi.
 
-### Catégories ciblées des associations
-7 catégories (table `categories`), choix multiple, au moins une. Filtre dans la liste des associations et statistiques par catégorie.
+### Catégorie des associations
+7 catégories (table `categories`), **choix unique**, obligatoire quand on crée ou modifie une association (les associations chargées depuis l'Excel n'en ont pas encore). Filtre dans la liste des associations et statistiques par catégorie.
+Une association qui a des bénéficiaires ne peut pas être supprimée : elle s'archive (`POST /api/associations/{id}/archive`) et se réactive (`/unarchive`).
 
 ### Statistiques
-Tableau de bord filtré par périmètre : totaux, filles/garçons, saisies par mois, par province ou association, tranches d'âge (0–5, 6–12, 13–17, 18–59, 60+), associations par catégorie, dernières fiches.
+Tableau de bord filtré par périmètre : totaux, filles/garçons, par province ou association, tranches d'âge (0–5, 6–12, 13–17, 18–59, 60+), associations par catégorie, dernières fiches.
 
 ### Export
 `Exporter (CSV)` : UTF-8 avec BOM (ouvre l'arabe correctement dans Excel), limité au périmètre, journalisé, protégé contre l'injection de formules.
@@ -86,7 +87,7 @@ gunzip -c backups/entraide-AAAAMMJJ-HHMMSS.sql.gz | docker compose exec -T db sh
 Copiez régulièrement `./backups` hors du serveur.
 
 ## API (résumé)
-`POST /api/auth/login|logout|change-password`, `GET /api/auth/me`, `GET /api/ref`, `GET|POST|PUT|DELETE /api/associations`, `GET|POST|PUT|DELETE /api/beneficiaries`, `POST /api/beneficiaries/check`, `GET /api/beneficiaries/export.csv`, `GET /api/stats`, `GET /api/users` + `POST /{id}/reset-password` + `PUT /{id}/enabled` (admin), `GET /api/audit` (admin).
+`POST /api/auth/login|logout|change-password`, `GET /api/auth/me`, `GET /api/ref`, `GET|POST|PUT|DELETE /api/associations` (+ `POST /{id}/archive|unarchive`), `GET|POST|PUT|DELETE /api/beneficiaries`, `POST /api/beneficiaries/check`, `GET /api/beneficiaries/export.csv`, `GET /api/stats`, `GET /api/users` + `POST /{id}/reset-password` + `PUT /{id}/enabled` (admin), `GET /api/audit` (admin).
 
 ## Développement local
 ```bash
@@ -104,4 +105,4 @@ cd frontend && npm install && npm run dev
 Tests unitaires : `cd backend && mvn test`.
 
 ## Hors périmètre de cette version
-Fusion des doublons par l'admin, import de bénéficiaires existants, création de comptes depuis l'interface, modification des catégories depuis l'interface (table prête), notifications.
+Fusion des doublons par l'admin, import de bénéficiaires existants, création de comptes depuis l'interface, gestion de la liste des catégories depuis l'interface (table prête), notifications.

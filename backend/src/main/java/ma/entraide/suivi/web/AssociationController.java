@@ -33,6 +33,12 @@ public class AssociationController {
         return service.update(me, id, r);
     }
 
+    @PostMapping("/{id}/archive")
+    public void archive(@AuthenticationPrincipal AppUserPrincipal me, @PathVariable Long id) { service.setActive(me, id, false); }
+
+    @PostMapping("/{id}/unarchive")
+    public void unarchive(@AuthenticationPrincipal AppUserPrincipal me, @PathVariable Long id) { service.setActive(me, id, true); }
+
     @DeleteMapping("/{id}")
     public void delete(@AuthenticationPrincipal AppUserPrincipal me, @PathVariable Long id) { service.delete(me, id); }
 }

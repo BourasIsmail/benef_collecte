@@ -10,6 +10,9 @@ import { fmtDate, pick, todayIso } from '@/lib/util';
 interface Form { associationId: string; nomFr: string; prenomFr: string; nomAr: string; prenomAr: string; dateNaissance: string; sexe: '' | 'F' | 'M'; cin: string }
 const empty: Form = { associationId: '', nomFr: '', prenomFr: '', nomAr: '', prenomAr: '', dateNaissance: '', sexe: '', cin: '' };
 
+/** Red star = required field. Decorative: the inputs carry the real `required` attribute. */
+function Req() { return <span className="req" aria-hidden="true">*</span>; }
+
 export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
   const { t, lang, err } = useI18n();
   const toast = useToast();
@@ -50,7 +53,7 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
   const complete = f.associationId && f.nomFr.trim() && f.prenomFr.trim() && f.nomAr.trim() && f.prenomAr.trim() && f.dateNaissance && f.sexe;
 
   const selected = assos.find((a) => String(a.id) === f.associationId);
-  const catNames = useMemo(() => (selected && ref ? selected.categoryIds.map((id) => ref.categories.find((c) => c.id === id)).filter(Boolean).map((c) => pick(lang, c)) : []), [selected, ref, lang]);
+  const catNames = useMemo(() => { const c = selected?.categoryId && ref ? ref.categories.find((x) => x.id === selected.categoryId) : undefined; return c ? [pick(lang, c)] : []; }, [selected, ref, lang]);
   const grouped = useMemo(() => {
     const m = new Map<number, { name: string; items: Association[] }>();
     for (const a of assos) { if (!m.has(a.provinceId)) m.set(a.provinceId, { name: pick(lang, { nomFr: a.provinceNomFr, nomAr: a.provinceNomAr }), items: [] }); m.get(a.provinceId)!.items.push(a); }
@@ -95,11 +98,11 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
           <div className="sect"><Icon name="user" size={16} />{t('secIdentity')}</div>
           <label>{t('fNomFr')}<input id="nomFr" type="text" required maxLength={120} value={f.nomFr} onChange={set('nomFr')} autoComplete="off" />{fields.nomFr && <span className="fielderr">{fields.nomFr}</span>}</label>
           <label>{t('fPrenomFr')}<input id="prenomFr" type="text" required maxLength={120} value={f.prenomFr} onChange={set('prenomFr')} autoComplete="off" /></label>
-          <label>{t('fNomAr')}<input id="nomAr" type="text" dir="rtl" required maxLength={120} value={f.nomAr} onChange={set('nomAr')} autoComplete="off" /></label>
-          <label>{t('fPrenomAr')}<input id="prenomAr" type="text" dir="rtl" required maxLength={120} value={f.prenomAr} onChange={set('prenomAr')} autoComplete="off" /></label>
-          <label>{t('fDob')}<input id="dob" type="date" required min="1900-01-01" max={todayIso()} value={f.dateNaissance} onChange={set('dateNaissance')} />{fields.dateNaissance && <span className="fielderr">{fields.dateNaissance}</span>}</label>
-          <label>{t('fSex')}
-            <div className="seg">
+          <label><span>{t('fNomAr')}<Req /></span><input id="nomAr" type="text" dir="rtl" required maxLength={120} value={f.nomAr} onChange={set('nomAr')} autoComplete="off" /></label>
+          <label><span>{t('fPrenomAr')}<Req /></span><input id="prenomAr" type="text" dir="rtl" required maxLength={120} value={f.prenomAr} onChange={set('prenomAr')} autoComplete="off" /></label>
+          <label><span>{t('fDob')}<Req /></span><input id="dob" type="date" required min="1900-01-01" max={todayIso()} value={f.dateNaissance} onChange={set('dateNaissance')} />{fields.dateNaissance && <span className="fielderr">{fields.dateNaissance}</span>}</label>
+          <label><span>{t('fSex')}<Req /></span>
+            <div className="seg" role="radiogroup" aria-required="true">
               <label><input type="radio" name="sexe" value="F" checked={f.sexe === 'F'} onChange={set('sexe')} />{t('F')}</label>
               <label><input type="radio" name="sexe" value="M" checked={f.sexe === 'M'} onChange={set('sexe')} />{t('M')}</label>
             </div>

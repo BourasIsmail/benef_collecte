@@ -68,12 +68,6 @@ svg{flex:none}
 .c-brand{background:var(--brand-soft);color:var(--brand)} .c-sun{background:var(--sun-soft);color:var(--brand)} .c-violet{background:var(--brand-soft);color:var(--brand)} .c-pink{background:var(--pink-soft);color:var(--pink)} .c-sky{background:var(--sky-soft);color:var(--sky)}
 .kpi .v{font-size:28px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .kpi .l{color:var(--muted);font-size:12.5px}
-.months{display:flex;gap:6px;align-items:flex-end;height:170px;padding-top:8px}
-.months div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
-.months i{display:block;width:100%;max-width:28px;border-radius:7px 7px 3px 3px;background:var(--brand);opacity:.25;min-height:4px}
-.months .last i{opacity:1}
-.months em{font-style:normal;font-size:10.5px;color:var(--muted)}
-.months b{font-size:11px;font-variant-numeric:tabular-nums}
 .bars{display:flex;flex-direction:column;gap:12px}
 .bar{display:grid;grid-template-columns:minmax(90px,200px) minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:12.5px}
 .bar .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
@@ -193,3 +187,5 @@ a{color:inherit;text-decoration:none}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .check-row{display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:500;font-size:13px;flex-direction:row}
 .muted{color:var(--muted)}
+.req{color:var(--bad);font-weight:700;margin-inline-start:3px}
+.cb.radio input{accent-color:var(--brand)}

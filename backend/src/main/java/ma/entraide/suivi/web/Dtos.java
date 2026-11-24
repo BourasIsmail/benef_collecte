@@ -22,9 +22,9 @@ public final class Dtos {
     public record RefData(List<RegionDto> regions, List<ProvinceDto> provinces, List<CategoryDto> categories) {}
 
     public record AssociationRequest(@NotNull Long provinceId, @NotBlank @Size(max = 255) String nomAr,
-                                     @NotEmpty List<Long> categoryIds, Boolean actif) {}
+                                     @NotNull Long categoryId) {}
     public record AssociationDto(Long id, Long provinceId, String provinceNomFr, String provinceNomAr, String nomAr,
-                                 boolean actif, List<Long> categoryIds, long beneficiaryCount) {}
+                                 boolean actif, Long categoryId, long beneficiaryCount) {}
 
     public record BeneficiaryRequest(
             @NotNull Long associationId,
@@ -45,10 +45,9 @@ public final class Dtos {
     public record AuditDto(Long id, LocalDateTime at, String userEmail, String action, String entity, Long entityId, String details) {}
 
     public record Count(String label, String labelAr, long count) {}
-    public record Month(String month, long count) {}
     public record LatestDto(Long id, String nomFr, String prenomFr, String sexe, String associationNom) {}
     public record Stats(long total, long girls, long boys, long associations, long provinces, List<Count> byProvince,
-                        List<Count> byAssociation, List<Count> ageBands, List<Month> monthly,
+                        List<Count> byAssociation, List<Count> ageBands,
                         List<Count> associationsByCategory, List<LatestDto> latest) {}
 
     public record DuplicateResponse(String code, DedupService.Result result) {}

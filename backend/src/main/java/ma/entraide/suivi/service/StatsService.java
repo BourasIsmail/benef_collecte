@@ -6,11 +6,8 @@ import ma.entraide.suivi.web.Dtos.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class StatsService {
@@ -59,24 +56,14 @@ public class StatsService {
         List<Count> ageBands = new ArrayList<>();
         for (int i = 0; i < ageLabels.length; i++) ageBands.add(new Count(ageLabels[i], ageLabels[i], num(age[i])));
 
-        // last 12 months of data entry
-        Map<String, Long> months = new LinkedHashMap<>();
-        YearMonth now = YearMonth.now();
-        for (int i = 11; i >= 0; i--) months.put(now.minusMonths(i).toString(), 0L);
-        for (Object[] r : rows("select date_format(b.created_at, '%Y-%m'), count(*)" + base
-                + " and b.created_at >= date_sub(date_format(curdate(), '%Y-%m-01'), interval 11 month) group by 1", v))
-            months.computeIfPresent((String) r[0], (k, o) -> num(r[1]));
-        List<Month> monthly = months.entrySet().stream().map(e -> new Month(e.getKey(), e.getValue())).toList();
-
-        List<Count> byCat = rows("select c.nom_fr, c.nom_ar, count(distinct a.id) from categories c "
-                + "left join (select ac.category_id, a.id, a.province_id from association_categories ac join associations a on a.id = ac.association_id where a.actif = true) a on a.category_id = c.id "
-                + "left join provinces p on p.id = a.province_id where c.actif = true and (a.id is null or " + SCOPE + ") "
-                + "group by c.id, c.nom_fr, c.nom_ar order by count(distinct a.id) desc, c.id", v)
+        List<Count> byCat = rows("select c.nom_fr, c.nom_ar, count(a.id) from categories c "
+                + "left join (select a.id, a.category_id from associations a join provinces p on p.id = a.province_id where a.actif = true and " + SCOPE + ") a on a.category_id = c.id "
+                + "where c.actif = true group by c.id, c.nom_fr, c.nom_ar order by count(a.id) desc, c.id", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 
         List<LatestDto> latest = rows("select b.id, b.nom_fr, b.prenom_fr, b.sexe, a.nom_ar" + base + " order by b.created_at desc, b.id desc limit 6", v)
                 .stream().map(r -> new LatestDto(num(r[0]), (String) r[1], (String) r[2], String.valueOf(r[3]), (String) r[4])).toList();
 
-        return new Stats(total, girls, total - girls, assoCount, provCount, byProvince, byAsso, ageBands, monthly, byCat, latest);
+        return new Stats(total, girls, total - girls, assoCount, provCount, byProvince, byAsso, ageBands, byCat, latest);
     }
 }

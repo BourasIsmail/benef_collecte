@@ -37,7 +37,7 @@ export interface Category { id: number; code: string; nomFr: string; nomAr: stri
 export interface RefData { regions: Region[]; provinces: Province[]; categories: Category[] }
 export interface Association {
   id: number; provinceId: number; provinceNomFr: string; provinceNomAr: string; nomAr: string;
-  actif: boolean; categoryIds: number[]; beneficiaryCount: number;
+  actif: boolean; categoryId?: number; beneficiaryCount: number;
 }
 export interface Beneficiary {
   id: number; associationId: number; associationNom: string; provinceId: number; provinceNomFr: string; provinceNomAr: string;
@@ -49,7 +49,7 @@ export interface CheckResult { key: string; exact: Match[]; similar: { match: Ma
 export interface Count { label: string; labelAr: string; count: number }
 export interface Stats {
   total: number; girls: number; boys: number; associations: number; provinces: number;
-  byProvince: Count[]; byAssociation: Count[]; ageBands: Count[]; monthly: { month: string; count: number }[];
+  byProvince: Count[]; byAssociation: Count[]; ageBands: Count[];
   associationsByCategory: Count[]; latest: { id: number; nomFr: string; prenomFr: string; sexe: string; associationNom: string }[];
 }
 export interface UserRow { id: number; email: string; role: Role; provinceNomFr?: string; regionNomFr?: string; enabled: boolean; mustChangePassword: boolean; lastLogin?: string }

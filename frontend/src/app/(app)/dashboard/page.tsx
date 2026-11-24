@@ -35,8 +35,6 @@ export default function Dashboard() {
   const gp = s.total ? Math.round((s.girls / s.total) * 100) : 0;
   const multiProvince = s.provinces > 1;
   const provItems = s.byProvince.slice(0, 12);
-  const monthMax = Math.max(1, ...s.monthly.map((m) => m.count));
-  const monthName = (ym: string) => new Intl.DateTimeFormat(lang === 'ar' ? 'ar-MA-u-nu-latn' : 'fr-FR', { month: 'short' }).format(new Date(ym + '-01T12:00:00'));
   const kpi = (chip: string, icon: string, v: string | number, l: string) => (
     <div className="card kpi"><span className={`chip ${chip}`}><Icon name={icon} size={22} /></span><div><div className="v">{v}</div><div className="l">{l}</div></div></div>
   );
@@ -57,18 +55,6 @@ export default function Dashboard() {
       </div>
       <div className="grid g21">
         <div className="card">
-          <div className="head"><h2>{t('monthly')}</h2><span>{t('monthlySub')}</span></div>
-          <div className="months">
-            {s.monthly.map((m, i) => (
-              <div key={m.month} className={i === s.monthly.length - 1 ? 'last' : ''} title={`${m.month} : ${m.count}`}>
-                <b>{i === s.monthly.length - 1 || m.count === monthMax ? m.count : ''}</b>
-                <i style={{ height: `${Math.max(3, (m.count / monthMax) * 78)}%` }} />
-                <em>{monthName(m.month)}</em>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="card">
           <div className="head"><h2>{t('sexSplit')}</h2></div>
           <div className="donutrow">
             <div className="donut" role="img" aria-label={`${t('girls')} ${s.girls}, ${t('boys')} ${s.boys}`}
@@ -81,13 +67,13 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        <div className="card"><div className="head"><h2>{t('ageBands')}</h2></div><Bars items={s.ageBands.map((a) => ({ ...a, label: `${a.label} ${t('ageYears')}`, labelAr: `${a.label} ${t('ageYears')}` }))} color="var(--sun)" lang={lang} /></div>
       </div>
       <div className="grid g21">
         <div className="card">
           <div className="head"><h2>{multiProvince ? t('byProvince') : t('byAssociation')}</h2>{multiProvince && s.byProvince.length > provItems.length && <span>+{s.byProvince.length - provItems.length} {t('moreProvinces')}</span>}</div>
           <Bars items={multiProvince ? provItems : s.byAssociation} color="var(--brand)" lang={lang} />
         </div>
-        <div className="card"><div className="head"><h2>{t('ageBands')}</h2></div><Bars items={s.ageBands.map((a) => ({ ...a, label: `${a.label} ${t('ageYears')}`, labelAr: `${a.label} ${t('ageYears')}` }))} color="var(--sun)" lang={lang} /></div>
         <div className="card"><div className="head"><h2>{t('byCategory')}</h2></div><Bars items={s.associationsByCategory} color="var(--brand2)" lang={lang} /></div>
         <div className="card">
           <div className="head"><h2>{t('latest')}</h2></div>

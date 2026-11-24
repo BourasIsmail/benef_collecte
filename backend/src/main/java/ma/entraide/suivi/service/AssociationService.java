@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ public class AssociationService {
         return repo.findScoped(view.all(), view.ids()).stream()
                 .filter(a -> includeArchived || a.isActif())
                 .filter(a -> provinceId == null || a.getProvince().getId().equals(provinceId))
-                .filter(a -> categoryId == null || a.getCategories().stream().anyMatch(c -> c.getId().equals(categoryId)))
+                .filter(a -> categoryId == null || a.getCategory() != null && a.getCategory().getId().equals(categoryId))
                 .filter(a -> term.isEmpty() || Text.normAr(a.getNomAr()).contains(term))
                 .map(a -> toDto(a, counts.getOrDefault(a.getId(), 0L))).toList();
     }
@@ -59,7 +58,7 @@ public class AssociationService {
         a.setProvince(p);
         a.setNomAr(nom);
         a.setActif(true);
-        a.setCategories(resolveCategories(r));
+        a.setCategory(resolveCategory(r.categoryId()));
         repo.save(a);
         audit.log(me.email(), "ASSOCIATION_CREATED", "Association", a.getId(), nom);
         return toDto(a, 0);
@@ -74,8 +73,7 @@ public class AssociationService {
         if (repo.existsByProvinceIdAndNomArAndIdNot(target.getId(), nom, id)) throw new ApiException(HttpStatus.CONFLICT, "ASSOCIATION_EXISTS");
         a.setProvince(target);
         a.setNomAr(nom);
-        if (r.actif() != null) a.setActif(r.actif());
-        a.setCategories(resolveCategories(r));
+        a.setCategory(resolveCategory(r.categoryId()));
         audit.log(me.email(), "ASSOCIATION_UPDATED", "Association", id, nom);
         return toDto(a, beneficiaries.countByAssociationId(id));
     }
@@ -90,6 +88,15 @@ public class AssociationService {
         audit.log(me.email(), "ASSOCIATION_DELETED", "Association", id, a.getNomAr());
     }
 
+    /** Archiving keeps the association and its beneficiaries but hides it from the entry forms. */
+    @Transactional
+    public void setActive(AppUserPrincipal me, Long id, boolean actif) {
+        Association a = repo.findById(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND"));
+        writableProvince(me, a.getProvince().getId());
+        a.setActif(actif);
+        audit.log(me.email(), actif ? "ASSOCIATION_UNARCHIVED" : "ASSOCIATION_ARCHIVED", "Association", id, a.getNomAr());
+    }
+
     /** ADMIN: any province; PROVINCE: its own province only; REGIONAL: never. */
     private Province writableProvince(AppUserPrincipal me, Long provinceId) {
         if (!Scope.canWrite(me)) throw new ApiException(HttpStatus.FORBIDDEN, "READ_ONLY");
@@ -97,15 +104,13 @@ public class AssociationService {
         return provinces.findById(provinceId).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "PROVINCE_NOT_FOUND"));
     }
 
-    private java.util.Set<Category> resolveCategories(AssociationRequest r) {
-        var found = new LinkedHashSet<>(categories.findAllById(r.categoryIds()));
-        if (found.isEmpty() || found.size() != new LinkedHashSet<>(r.categoryIds()).size())
-            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_CATEGORIES");
-        return found;
+    private Category resolveCategory(Long id) {
+        return categories.findById(id).filter(Category::isActif)
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "INVALID_CATEGORIES"));
     }
 
     private AssociationDto toDto(Association a, long count) {
         return new AssociationDto(a.getId(), a.getProvince().getId(), a.getProvince().getNomFr(), a.getProvince().getNomAr(),
-                a.getNomAr(), a.isActif(), a.getCategories().stream().map(Category::getId).sorted().toList(), count);
+                a.getNomAr(), a.isActif(), a.getCategory() == null ? null : a.getCategory().getId(), count);
     }
 }

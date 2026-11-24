@@ -34,6 +34,11 @@ export default function AssociationsPage() {
   useEffect(() => { api<RefData>('/ref').then(setRef); }, []);
   useEffect(() => { const h = setTimeout(load, 200); return () => clearTimeout(h); }, [load]);
 
+  async function unarchive(a: Association) {
+    try { await api(`/associations/${a.id}/unarchive`, { method: 'POST' }); toast(t('assocUnarchived')); load(); }
+    catch (e) { setError(err(e instanceof ApiError ? e.code : 'INTERNAL')); }
+  }
+
   if (!me || !ref) return <div className="center"><div className="spinner" /></div>;
   const write = canWrite(me);
   const catName = (id: number) => { const c = ref.categories.find((x) => x.id === id); return c ? pick(lang, c) : ''; };
@@ -69,9 +74,10 @@ export default function AssociationsPage() {
                 <tr key={a.id}>
                   <td><div className="person"><span className="chip c-brand" style={{ width: 36, height: 36 }}><Icon name="asso" /></span><div><b className="ar" style={{ color: 'var(--ink)', fontSize: 14 }}>{a.nomAr}</b>{!a.actif && <div><span className="pill off">{t('assocArchivedTag')}</span></div>}</div></div></td>
                   <td>{provName(a)}</td>
-                  <td><div className="cats">{a.categoryIds.length ? a.categoryIds.map((id) => <span key={id} className="pill cat">{catName(id)}</span>) : <span className="muted">–</span>}</div></td>
+                  <td>{a.categoryId ? <span className="pill cat">{catName(a.categoryId)}</span> : <span className="muted">–</span>}</td>
                   <td><span className="pill ok">{a.beneficiaryCount}</span></td>
                   {write && <td><div className="row-actions">
+                    {!a.actif && <button className="btn sm" type="button" onClick={() => unarchive(a)}>{t('unarchive')}</button>}
                     <button className="btn sm" type="button" onClick={() => setDlg({ kind: 'edit', a })}><Icon name="edit" size={14} />{t('edit')}</button>
                     <button className="btn sm danger" type="button" onClick={() => setDlg({ kind: 'delete', a })}><Icon name="trash" size={14} />{t('delete')}</button>
                   </div></td>}
@@ -94,18 +100,16 @@ function EditDialog({ a, ref_, onClose, onSaved }: { a: Association | null; ref_
   const { t, lang, err } = useI18n();
   const [nom, setNom] = useState(a?.nomAr ?? '');
   const [provinceId, setProvinceId] = useState(String(a?.provinceId ?? (me?.role === 'PROVINCE' ? me.provinceId : ref_.provinces[0]?.id) ?? ''));
-  const [cats, setCats] = useState<number[]>(a?.categoryIds ?? []);
-  const [actif, setActif] = useState(a?.actif ?? true);
+  const [catId, setCatId] = useState<number | null>(a?.categoryId ?? null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const toggle = (id: number) => setCats((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!nom.trim()) return;
-    if (cats.length === 0) { setError(err('INVALID_CATEGORIES')); return; }
+    if (catId === null) { setError(err('INVALID_CATEGORIES')); return; }
     setBusy(true); setError('');
-    const body = { nomAr: nom, provinceId: Number(provinceId), categoryIds: cats, actif };
+    const body = { nomAr: nom, provinceId: Number(provinceId), categoryId: catId };
     try {
       if (a) await api('/associations/' + a.id, { method: 'PUT', body }); else await api('/associations', { method: 'POST', body });
       onSaved();
@@ -127,10 +131,9 @@ function EditDialog({ a, ref_, onClose, onSaved }: { a: Association | null; ref_
         <fieldset className="catset">
           <legend>{t('assocCategories')} <small>({t('assocCategoriesHint')})</small></legend>
           {ref_.categories.map((c) => (
-            <label key={c.id} className="cb"><input type="checkbox" name="cat" checked={cats.includes(c.id)} onChange={() => toggle(c.id)} /><span>{pick(lang, c)}</span></label>
+            <label key={c.id} className="cb radio"><input type="radio" name="cat" checked={catId === c.id} onChange={() => setCatId(c.id)} /><span>{pick(lang, c)}</span></label>
           ))}
         </fieldset>
-        {a && <label className="check-row"><input type="checkbox" checked={actif} onChange={(e) => setActif(e.target.checked)} />{t('assocActive')}</label>}
         {error && <div className="alert bad" role="alert">{error}</div>}
         <div className="actions" style={{ marginTop: 0 }}>
           <button className="btn" type="button" onClick={onClose}>{t('cancel')}</button>
@@ -150,7 +153,7 @@ function DeleteDialog({ a, onClose, onDone }: { a: Association; onClose: () => v
     catch (ex) { setError(err(ex instanceof ApiError ? ex.code : 'INTERNAL')); }
   }
   async function archive() {
-    try { await api('/associations/' + a.id, { method: 'PUT', body: { nomAr: a.nomAr, provinceId: a.provinceId, categoryIds: a.categoryIds, actif: false } }); onDone(t('assocSaved')); }
+    try { await api(`/associations/${a.id}/archive`, { method: 'POST' }); onDone(t('assocArchived')); }
     catch (ex) { setError(err(ex instanceof ApiError ? ex.code : 'INTERNAL')); }
   }
   return (
