@@ -1,0 +1,62 @@
+[
+ {
+  "code": "tanger-tetouan-al-hoceima",
+  "nomFr": "Tanger-Tétouan-Al Hoceïma",
+  "nomAr": "طنجة تطوان الحسيمة"
+ },
+ {
+  "code": "oriental",
+  "nomFr": "L'Oriental",
+  "nomAr": "الشرق"
+ },
+ {
+  "code": "fes-meknes",
+  "nomFr": "Fès-Meknès",
+  "nomAr": "فاس مكناس"
+ },
+ {
+  "code": "rabat-sale-kenitra",
+  "nomFr": "Rabat-Salé-Kénitra",
+  "nomAr": "الرباط سلا القنيطرة"
+ },
+ {
+  "code": "beni-mellal-khenifra",
+  "nomFr": "Béni Mellal-Khénifra",
+  "nomAr": "بني ملال خنيفرة"
+ },
+ {
+  "code": "casablanca-settat",
+  "nomFr": "Casablanca-Settat",
+  "nomAr": "الدار البيضاء سطات"
+ },
+ {
+  "code": "marrakech-safi",
+  "nomFr": "Marrakech-Safi",
+  "nomAr": "مراكش آسفي"
+ },
+ {
+  "code": "draa-tafilalet",
+  "nomFr": "Drâa-Tafilalet",
+  "nomAr": "درعة تافيلالت"
+ },
+ {
+  "code": "souss-massa",
+  "nomFr": "Souss-Massa",
+  "nomAr": "سوس ماسة"
+ },
+ {
+  "code": "guelmim-oued-noun",
+  "nomFr": "Guelmim-Oued Noun",
+  "nomAr": "كلميم واد نون"
+ },
+ {
+  "code": "laayoune-sakia-el-hamra",
+  "nomFr": "Laâyoune-Sakia El Hamra",
+  "nomAr": "العيون الساقية الحمراء"
+ },
+ {
+  "code": "dakhla-oued-ed-dahab",
+  "nomFr": "Dakhla-Oued Ed-Dahab",
+  "nomAr": "الداخلة وادي الذهب"
+ }
+]

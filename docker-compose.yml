@@ -1,0 +1,78 @@
+# Suivi des bénéficiaires : MySQL + API Spring Boot + interface Next.js
+# Seul le frontend est exposé. La base et l'API ne sont joignables que depuis le réseau Docker interne.
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?définir MYSQL_ROOT_PASSWORD dans .env}
+      MYSQL_DATABASE: entraide
+      MYSQL_USER: entraide
+      MYSQL_PASSWORD: ${DB_PASSWORD:?définir DB_PASSWORD dans .env}
+      TZ: Africa/Casablanca
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=+01:00"]
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/entraide?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=Africa/Casablanca
+      DB_USER: entraide
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:?définir APP_JWT_SECRET dans .env (32 caractères minimum)}
+      APP_DEFAULT_PASSWORD: ${APP_DEFAULT_PASSWORD:?définir APP_DEFAULT_PASSWORD dans .env}
+      APP_ADMIN_EMAIL: ${APP_ADMIN_EMAIL:-admin@entraide.ma}
+      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:-}
+      APP_EMAIL_DOMAIN: ${APP_EMAIL_DOMAIN:-entraide.ma}
+      APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:-false}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /actuator/health HTTP/1.0\\r\\n\\r\\n\" >&3 && grep -q UP <&3'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_URL: http://backend:8080
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  # Sauvegarde quotidienne à 02:00 (mysqldump compressé, 14 jours conservés) dans ./backups
+  backup:
+    image: mysql:8.4
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: entraide
+      MYSQL_USER: entraide
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      TZ: Africa/Casablanca
+    volumes:
+      - ./scripts/backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    entrypoint: ["bash", "/backup.sh"]
+
+volumes:
+  dbdata:

@@ -1,0 +1,37 @@
+[
+ {
+  "code": "personnes-agees",
+  "nomFr": "Personnes âgées",
+  "nomAr": "فئة المسنين"
+ },
+ {
+  "code": "enfants-difficiles",
+  "nomFr": "Enfants en situation difficile",
+  "nomAr": "فئة الأطفال في وضعية صعبة"
+ },
+ {
+  "code": "scolarisation",
+  "nomFr": "Scolarisation (Dar Taliba / Dar Talib, écoles coraniques)",
+  "nomAr": "فئة التمدرس (دور الطالب والطالبة / المدارس العتيقة)"
+ },
+ {
+  "code": "handicap",
+  "nomFr": "Personnes en situation de handicap",
+  "nomAr": "فئة الأشخاص في وضعية إعاقة"
+ },
+ {
+  "code": "personnes-difficiles",
+  "nomFr": "Personnes en situation difficile",
+  "nomAr": "فئة الأشخاص في وضعية صعبة"
+ },
+ {
+  "code": "femmes-difficiles",
+  "nomFr": "Femmes en situation difficile",
+  "nomAr": "فئة النساء في وضعية صعبة"
+ },
+ {
+  "code": "complexes",
+  "nomFr": "Complexes",
+  "nomAr": "المركبات"
+ }
+]

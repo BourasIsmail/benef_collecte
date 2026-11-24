@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: suivi-beneficiaires
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/entraide?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=Africa/Casablanca}
+    username: ${DB_USER:entraide}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: Africa/Casablanca
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+  forward-headers-strategy: framework
+management:
+  endpoints.web.exposure.include: health
+  endpoint.health.probes.enabled: true
+app:
+  jwt-secret: ${APP_JWT_SECRET}
+  jwt-ttl-hours: ${APP_JWT_TTL_HOURS:8}
+  cookie-secure: ${APP_COOKIE_SECURE:false}
+  default-password: ${APP_DEFAULT_PASSWORD}
+  admin-email: ${APP_ADMIN_EMAIL:admin@entraide.ma}
+  admin-password: ${APP_ADMIN_PASSWORD:}
+  email-domain: ${APP_EMAIL_DOMAIN:entraide.ma}
