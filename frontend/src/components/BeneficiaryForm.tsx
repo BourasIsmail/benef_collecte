@@ -89,15 +89,15 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
       <div className="card">
         <div className="fields">
           <div className="sect"><Icon name="asso" size={16} />{t('secAssociation')}</div>
-          <label className="full">{t('fAssociation')}
+          <label className="full"><span>{t('fAssociation')}<Req /></span>
             <select id="association" required value={f.associationId} onChange={set('associationId')}>
               {grouped.map((g) => <optgroup key={g.name} label={g.name}>{g.items.map((a) => <option key={a.id} value={a.id}>{a.nomAr}</option>)}</optgroup>)}
             </select>
             {catNames.length > 0 && <span className="cats" style={{ marginTop: 4 }}>{catNames.map((c) => <span key={c} className="pill cat">{c}</span>)}</span>}
           </label>
           <div className="sect"><Icon name="user" size={16} />{t('secIdentity')}</div>
-          <label>{t('fNomFr')}<input id="nomFr" type="text" required maxLength={120} value={f.nomFr} onChange={set('nomFr')} autoComplete="off" />{fields.nomFr && <span className="fielderr">{fields.nomFr}</span>}</label>
-          <label>{t('fPrenomFr')}<input id="prenomFr" type="text" required maxLength={120} value={f.prenomFr} onChange={set('prenomFr')} autoComplete="off" /></label>
+          <label><span>{t('fNomFr')}<Req /></span><input id="nomFr" type="text" required maxLength={120} value={f.nomFr} onChange={set('nomFr')} autoComplete="off" />{fields.nomFr && <span className="fielderr">{fields.nomFr}</span>}</label>
+          <label><span>{t('fPrenomFr')}<Req /></span><input id="prenomFr" type="text" required maxLength={120} value={f.prenomFr} onChange={set('prenomFr')} autoComplete="off" /></label>
           <label><span>{t('fNomAr')}<Req /></span><input id="nomAr" type="text" dir="rtl" required maxLength={120} value={f.nomAr} onChange={set('nomAr')} autoComplete="off" /></label>
           <label><span>{t('fPrenomAr')}<Req /></span><input id="prenomAr" type="text" dir="rtl" required maxLength={120} value={f.prenomAr} onChange={set('prenomAr')} autoComplete="off" /></label>
           <label><span>{t('fDob')}<Req /></span><input id="dob" type="date" required min="1900-01-01" max={todayIso()} value={f.dateNaissance} onChange={set('dateNaissance')} />{fields.dateNaissance && <span className="fielderr">{fields.dateNaissance}</span>}</label>
