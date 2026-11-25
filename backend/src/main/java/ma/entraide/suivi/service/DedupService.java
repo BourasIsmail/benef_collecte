@@ -13,8 +13,8 @@ import java.util.Map;
 
 @Service
 public class DedupService {
-    public record Match(Long id, String nomFr, String prenomFr, LocalDate dateNaissance, String associationNom,
-                        String provinceNomFr, String provinceNomAr, boolean visible) {}
+    public record Match(Long id, String nomFr, String prenomFr, LocalDate dateNaissance, String etablissementNom,
+                        String associationNom, String provinceNomFr, String provinceNomAr, boolean visible) {}
     public record Similar(Match match, String reason) {}
     public record Result(String key, List<Match> exact, List<Similar> similar) {}
 
@@ -64,11 +64,12 @@ public class DedupService {
     }
 
     private Match toMatch(Beneficiary b, Scope.View scope) {
-        var prov = b.getAssociation().getProvince();
+        var etab = b.getEtablissement();
+        var prov = etab.getProvince();
         boolean visible = scope.contains(prov.getId());
         // outside the user's perimeter: confirm that it exists, reveal nothing else
         return new Match(visible ? b.getId() : null, visible ? b.getNomFr() : null, visible ? b.getPrenomFr() : null, visible ? b.getDateNaissance() : null,
-                visible ? b.getAssociation().getNomAr() : null, visible ? prov.getNomFr() : null,
+                visible ? etab.getNomAr() : null, visible ? etab.getAssociation().getNomAr() : null, visible ? prov.getNomFr() : null,
                 visible ? prov.getNomAr() : null, visible);
     }
 }

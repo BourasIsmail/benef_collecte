@@ -24,10 +24,11 @@ public class BeneficiaryController {
 
     @GetMapping
     public PageDto<BeneficiaryDto> list(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) String q,
-                                        @RequestParam(required = false) Long associationId, @RequestParam(required = false) Long provinceId,
-                                        @RequestParam(required = false) String sexe, @RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long associationId,
+                                        @RequestParam(required = false) Long provinceId, @RequestParam(required = false) String sexe,
+                                        @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "20") int size) {
-        return service.search(me, q, associationId, provinceId, sexe, page, size);
+        return service.search(me, q, etablissementId, associationId, provinceId, sexe, page, size);
     }
 
     @GetMapping("/{id}")
@@ -54,17 +55,17 @@ public class BeneficiaryController {
     /** CSV export (UTF-8 with BOM so Excel opens Arabic correctly), restricted to the caller's perimeter. */
     @GetMapping("/export.csv")
     public void export(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) String q,
-                       @RequestParam(required = false) Long associationId, @RequestParam(required = false) Long provinceId,
-                       @RequestParam(required = false) String sexe, HttpServletResponse res) throws IOException {
-        var rows = service.exportAll(me, q, associationId, provinceId, sexe);
+                       @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long associationId,
+                       @RequestParam(required = false) Long provinceId, @RequestParam(required = false) String sexe, HttpServletResponse res) throws IOException {
+        var rows = service.exportAll(me, q, etablissementId, associationId, provinceId, sexe);
         audit.log(me.email(), "EXPORT_CSV", "Beneficiary", null, rows.size() + " lignes");
         res.setContentType("text/csv;charset=UTF-8");
         res.setHeader("Content-Disposition", "attachment; filename=\"beneficiaires.csv\"");
         PrintWriter w = new PrintWriter(new java.io.OutputStreamWriter(res.getOutputStream(), StandardCharsets.UTF_8));
         w.write('﻿');
-        w.write("Province,Association,Nom (FR),Prénom (FR),Nom (AR),Prénom (AR),Date de naissance,Sexe,CIN\r\n");
+        w.write("Province,Association,Établissement,Nom (FR),Prénom (FR),Nom (AR),Prénom (AR),Date de naissance,Sexe,CIN\r\n");
         for (var b : rows) {
-            w.write(String.join(",", csv(b.provinceNomFr()), csv(b.associationNom()), csv(b.nomFr()), csv(b.prenomFr()),
+            w.write(String.join(",", csv(b.provinceNomFr()), csv(b.associationNom()), csv(b.etablissementNom()), csv(b.nomFr()), csv(b.prenomFr()),
                     csv(b.nomAr()), csv(b.prenomAr()), String.valueOf(b.dateNaissance()), b.sexe(), csv(b.cin())) + "\r\n");
         }
         w.flush();

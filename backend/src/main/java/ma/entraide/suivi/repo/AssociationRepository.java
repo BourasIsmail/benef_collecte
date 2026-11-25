@@ -9,12 +9,19 @@ import java.util.Collection;
 import java.util.List;
 
 public interface AssociationRepository extends JpaRepository<Association, Long> {
-    @Query("select a from Association a join fetch a.province p where (:all = true or p.id in :ids) order by p.nomFr, a.nomAr")
+    boolean existsByNomAr(String nomAr);
+    boolean existsByNomArAndIdNot(String nomAr, Long id);
+
+    /** Associations having at least one établissement in the caller's perimeter. */
+    @Query("select distinct a from Etablissement e join e.association a where (:all = true or e.province.id in :ids) order by a.nomAr")
     List<Association> findScoped(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
 
-    boolean existsByProvinceIdAndNomArAndIdNot(Long provinceId, String nomAr, Long id);
-    boolean existsByProvinceIdAndNomAr(Long provinceId, String nomAr);
+    @Query("select a from Association a order by a.nomAr")
+    List<Association> findAllSorted();
 
-    @Query("select b.association.id, count(b) from Beneficiary b where b.statut = 'ACTIF' group by b.association.id")
-    List<Object[]> countActiveBeneficiaries();
+    @Query("select e.association.id, count(e) from Etablissement e where e.actif = true and (:all = true or e.province.id in :ids) group by e.association.id")
+    List<Object[]> countEtablissements(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
+
+    @Query("select e.association.id, count(b) from Beneficiary b join b.etablissement e where b.statut = 'ACTIF' and (:all = true or e.province.id in :ids) group by e.association.id")
+    List<Object[]> countBeneficiaries(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
 }

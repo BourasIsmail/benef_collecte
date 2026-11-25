@@ -1,14 +1,18 @@
 'use client';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, ApiError, Association, Beneficiary, CheckResult, Match, RefData } from '@/lib/api';
+import { api, ApiError, Beneficiary, CheckResult, Etablissement, Match, RefData } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import { Icon } from '@/lib/icons';
 import { useToast } from '@/lib/toast';
 import { fmtDate, pick, todayIso } from '@/lib/util';
+import { SearchSelect } from './SearchSelect';
 
-interface Form { associationId: string; nomFr: string; prenomFr: string; nomAr: string; prenomAr: string; dateNaissance: string; sexe: '' | 'F' | 'M'; cin: string }
-const empty: Form = { associationId: '', nomFr: '', prenomFr: '', nomAr: '', prenomAr: '', dateNaissance: '', sexe: '', cin: '' };
+interface Form {
+  associationId: string; etablissementId: string; nomFr: string; prenomFr: string; nomAr: string; prenomAr: string;
+  dateNaissance: string; sexe: '' | 'F' | 'M'; cin: string;
+}
+const empty: Form = { associationId: '', etablissementId: '', nomFr: '', prenomFr: '', nomAr: '', prenomAr: '', dateNaissance: '', sexe: '', cin: '' };
 
 /** Red star = required field. Decorative: the inputs carry the real `required` attribute. */
 function Req() { return <span className="req" aria-hidden="true">*</span>; }
@@ -18,10 +22,10 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
   const toast = useToast();
   const router = useRouter();
   const [ref, setRef] = useState<RefData | null>(null);
-  const [assos, setAssos] = useState<Association[]>([]);
+  const [etabs, setEtabs] = useState<Etablissement[]>([]);
   const [f, setF] = useState<Form>(existing ? {
-    associationId: String(existing.associationId), nomFr: existing.nomFr, prenomFr: existing.prenomFr, nomAr: existing.nomAr,
-    prenomAr: existing.prenomAr, dateNaissance: existing.dateNaissance, sexe: existing.sexe, cin: existing.cin ?? '',
+    associationId: String(existing.associationId), etablissementId: String(existing.etablissementId), nomFr: existing.nomFr, prenomFr: existing.prenomFr,
+    nomAr: existing.nomAr, prenomAr: existing.prenomAr, dateNaissance: existing.dateNaissance, sexe: existing.sexe, cin: existing.cin ?? '',
   } : empty);
   const [check, setCheck] = useState<CheckResult | null>(null);
   const [checking, setChecking] = useState(false);
@@ -31,7 +35,22 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
   const [busy, setBusy] = useState(false);
   const seq = useRef(0);
 
-  useEffect(() => { api<RefData>('/ref').then(setRef); api<Association[]>('/associations').then((a) => { setAssos(a); setF((cur) => (cur.associationId || existing ? cur : { ...cur, associationId: a[0] ? String(a[0].id) : '' })); }); }, [existing]);
+  useEffect(() => { api<RefData>('/ref').then(setRef); api<Etablissement[]>('/etablissements').then(setEtabs); }, []);
+
+  // association filter first, then the établissement of that association
+  const assocOptions = useMemo(() => {
+    const m = new Map<number, { name: string; n: number }>();
+    for (const e of etabs) { const cur = m.get(e.associationId); m.set(e.associationId, { name: e.associationNom, n: (cur?.n ?? 0) + 1 }); }
+    return [...m.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'ar')).map(([id, v]) => ({ value: String(id), label: v.name, hint: `${v.n}` }));
+  }, [etabs]);
+  const etabOfAssoc = useMemo(() => etabs.filter((e) => String(e.associationId) === f.associationId), [etabs, f.associationId]);
+  const multiProvince = useMemo(() => new Set(etabOfAssoc.map((e) => e.provinceId)).size > 1, [etabOfAssoc]);
+  const selectedEtab = etabs.find((e) => String(e.id) === f.etablissementId);
+
+  function chooseAssociation(id: string) {
+    const list = etabs.filter((e) => String(e.associationId) === id);
+    setF((c) => ({ ...c, associationId: id, etablissementId: list.length === 1 ? String(list[0].id) : '' }));
+  }
 
   const ready = f.nomFr.trim() && f.prenomFr.trim() && f.dateNaissance.length === 10;
   useEffect(() => {
@@ -50,20 +69,14 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
 
   const set = (k: keyof Form) => (e: { target: { value: string } }) => setF((c) => ({ ...c, [k]: e.target.value } as Form));
   const blocked = !!check && check.exact.length > 0 && !confirm;
-  const complete = f.associationId && f.nomFr.trim() && f.prenomFr.trim() && f.nomAr.trim() && f.prenomAr.trim() && f.dateNaissance && f.sexe;
-
-  const selected = assos.find((a) => String(a.id) === f.associationId);
-  const catNames = useMemo(() => { const c = selected?.categoryId && ref ? ref.categories.find((x) => x.id === selected.categoryId) : undefined; return c ? [pick(lang, c)] : []; }, [selected, ref, lang]);
-  const grouped = useMemo(() => {
-    const m = new Map<number, { name: string; items: Association[] }>();
-    for (const a of assos) { if (!m.has(a.provinceId)) m.set(a.provinceId, { name: pick(lang, { nomFr: a.provinceNomFr, nomAr: a.provinceNomAr }), items: [] }); m.get(a.provinceId)!.items.push(a); }
-    return [...m.values()];
-  }, [assos, lang]);
+  const complete = f.associationId && f.etablissementId && f.nomFr.trim() && f.prenomFr.trim() && f.nomAr.trim() && f.prenomAr.trim() && f.dateNaissance && f.sexe;
+  const catName = useMemo(() => { const c = selectedEtab && ref ? ref.categories.find((x) => x.id === selectedEtab.categoryId) : undefined; return c ? pick(lang, c) : ''; }, [selectedEtab, ref, lang]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(''); setFields({}); setBusy(true);
-    const body = { ...f, associationId: Number(f.associationId), cin: f.cin.trim() || null, confirmDuplicate: confirm };
+    const { associationId: _a, ...rest } = f;
+    const body = { ...rest, etablissementId: Number(f.etablissementId), cin: f.cin.trim() || null, confirmDuplicate: confirm };
     try {
       if (existing) await api('/beneficiaries/' + existing.id, { method: 'PUT', body }); else await api('/beneficiaries', { method: 'POST', body });
       toast(t('saved'));
@@ -79,7 +92,7 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
 
   const matchCard = (m: Match, k: number) => (
     <div className="m" key={k}>
-      {m.nomFr ? <><b>{m.nomFr} {m.prenomFr}</b><span>{fmtDate(m.dateNaissance)}{m.visible && <> · <span className="ar">{m.associationNom}</span> · {pick(lang, { nomFr: m.provinceNomFr, nomAr: m.provinceNomAr })}</>}</span></> : null}
+      {m.nomFr ? <><b>{m.nomFr} {m.prenomFr}</b><span>{fmtDate(m.dateNaissance)}{m.visible && <> · <span className="ar">{m.etablissementNom}</span> · <span className="ar">{m.associationNom}</span> · {pick(lang, { nomFr: m.provinceNomFr, nomAr: m.provinceNomAr })}</>}</span></> : null}
       {!m.visible && <span>{t('dupHidden')}</span>}
     </div>
   );
@@ -90,10 +103,15 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
         <div className="fields">
           <div className="sect"><Icon name="asso" size={16} />{t('secAssociation')}</div>
           <label className="full"><span>{t('fAssociation')}<Req /></span>
-            <select id="association" required value={f.associationId} onChange={set('associationId')}>
-              {grouped.map((g) => <optgroup key={g.name} label={g.name}>{g.items.map((a) => <option key={a.id} value={a.id}>{a.nomAr}</option>)}</optgroup>)}
+            <SearchSelect id="association" options={assocOptions} value={f.associationId} onChange={chooseAssociation} placeholder={t('chooseAssociation')} required />
+          </label>
+          <label className="full"><span>{t('fEtablissement')}<Req /></span>
+            <select id="etablissement" required value={f.etablissementId} onChange={set('etablissementId')} disabled={!f.associationId}>
+              <option value="">{f.associationId ? t('chooseEtablissement') : t('pickAssocFirst')}</option>
+              {etabOfAssoc.map((e) => <option key={e.id} value={e.id}>{e.nomAr}{multiProvince ? ` — ${pick(lang, { nomFr: e.provinceNomFr, nomAr: e.provinceNomAr })}` : ''}</option>)}
             </select>
-            {catNames.length > 0 && <span className="cats" style={{ marginTop: 4 }}>{catNames.map((c) => <span key={c} className="pill cat">{c}</span>)}</span>}
+            {f.associationId && etabOfAssoc.length === 0 && <span className="fielderr">{t('noEtab')}</span>}
+            {catName && <span className="cats" style={{ marginTop: 4 }}><span className="pill cat">{catName}</span></span>}
           </label>
           <div className="sect"><Icon name="user" size={16} />{t('secIdentity')}</div>
           <label><span>{t('fNomFr')}<Req /></span><input id="nomFr" type="text" required maxLength={120} value={f.nomFr} onChange={set('nomFr')} autoComplete="off" />{fields.nomFr && <span className="fielderr">{fields.nomFr}</span>}</label>

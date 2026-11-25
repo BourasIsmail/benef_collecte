@@ -28,8 +28,8 @@ Seul le frontend est exposé : l'API et la base ne sont joignables que depuis le
 
 | Rôle | E-mail | Droits |
 |---|---|---|
-| `ADMIN` (un seul) | `admin@entraide.ma` | Tout : saisie, associations de toutes les provinces, utilisateurs, journal d'audit |
-| `PROVINCE` (82) | `<province>@entraide.ma`, ex. `taza@entraide.ma`, `agadir-ida-outanane@entraide.ma` | Saisie des bénéficiaires et gestion (ajout, modification, suppression) des associations **de sa province** |
+| `ADMIN` (un seul) | `admin@entraide.ma` | Tout : bénéficiaires, **associations et établissements de toutes les provinces (ajout, modification, suppression, archivage)**, utilisateurs, journal d'audit |
+| `PROVINCE` (82) | `<province>@entraide.ma`, ex. `taza@entraide.ma`, `agadir-ida-outanane@entraide.ma` | **CRUD complet sur les bénéficiaires** de sa province. **Consultation seule** des associations et des établissements |
 | `REGIONAL` (12) | `region.<région>@entraide.ma`, ex. `region.fes-meknes@entraide.ma` | **Lecture seule** et statistiques de sa région |
 
 Tous les comptes reçoivent le mot de passe `APP_DEFAULT_PASSWORD` et **doivent le changer à la première connexion** (l'API refuse tout autre appel tant que ce n'est pas fait). Règle : 10 caractères minimum, majuscule, minuscule, chiffre, différent du mot de passe par défaut.
@@ -37,11 +37,15 @@ L'administrateur peut réinitialiser un mot de passe (retour au défaut + change
 
 La liste exacte des comptes est visible dans l'écran *Utilisateurs* (admin).
 
-### Données de référence (depuis l'Excel)
-Chargées au premier démarrage : **12 régions, 82 provinces, 1 210 associations** (`backend/src/main/resources/seed/*.json`). Les bénéficiaires de l'Excel ne sont **pas** importés : l'application démarre sans bénéficiaire.
-- Les 81 provinces du fichier + **Aousserd** (absente du fichier, ajoutée sans association) : à confirmer.
-- Les noms arabes des provinces et les rattachements aux régions sont proposés par nous : à relire.
-- Les associations n'ont pas de catégorie : à renseigner par chaque province.
+### Données de référence (depuis les Excel)
+Chargées au premier démarrage (`backend/src/main/resources/seed/*.json`) :
+- **12 régions, 82 provinces** (fichier des bénéficiaires 2025-2026, + Aousserd) ;
+- **7 catégories, 966 associations et 1 052 établissements** (fichier `base_EPS_2026`) : chaque feuille Excel est une catégorie (le nom de la feuille sans « 2026 »), chaque ligne un établissement rattaché à une association et à une province. Les lignes de total sont ignorées. RIB, comptes bancaires, montants et noms des présidents ne sont **pas** repris.
+
+Les bénéficiaires ne sont **pas** importés : l'application démarre sans bénéficiaire.
+À relire : noms arabes des provinces et rattachements aux régions (proposés par nous) ; Aousserd.
+
+> **Mise à jour depuis une version précédente** : le schéma a changé (établissements). Pour repartir d'une base propre : `docker compose down -v` (⚠ efface la base) puis `docker compose up -d --build`.
 
 ## Fonctionnement
 
@@ -52,12 +56,14 @@ Clé = `tri(nom FR, prénom FR normalisés) | date de naissance`. La normalisati
 - Un doublon situé **hors de votre périmètre** est signalé sans révéler son contenu.
 - Le CIN est facultatif, mais unique et au format `AB123456` quand il est saisi.
 
-### Catégorie des associations
-7 catégories (table `categories`), **choix unique**, obligatoire quand on crée ou modifie une association (les associations chargées depuis l'Excel n'en ont pas encore). Filtre dans la liste des associations et statistiques par catégorie.
-Une association qui a des bénéficiaires ne peut pas être supprimée : elle s'archive (`POST /api/associations/{id}/archive`) et se réactive (`/unarchive`).
+### Associations, établissements et catégories
+- Une **association** est une entité nationale (son nom est unique) qui peut avoir **plusieurs établissements**.
+- Un **établissement** appartient à une association, se situe dans **une province** et porte **la catégorie (la cible)**, à choix unique : personnes âgées, enfants en situation difficile, scolarisation (Dar Taliba / Dar Talib), personnes en situation de handicap, personnes en situation difficile, femmes en situation difficile, complexes. Il a aussi un type et un numéro de licence (facultatifs).
+- Un **bénéficiaire** appartient à **un établissement** : à la saisie on choisit d'abord l'association (liste filtrable), puis l'établissement de cette association.
+- Seul l'administrateur modifie associations et établissements. Une association qui a des établissements, ou un établissement qui a des bénéficiaires, ne peut pas être supprimé : l'établissement s'archive et se réactive.
 
 ### Statistiques
-Tableau de bord filtré par périmètre : totaux, filles/garçons, par province ou association, tranches d'âge (0–5, 6–12, 13–17, 18–59, 60+), associations par catégorie, dernières fiches.
+Tableau de bord filtré par périmètre : totaux, filles/garçons, par province ou par établissement, tranches d'âge (0–5, 6–12, 13–17, 18–59, 60+), établissements par catégorie, dernières fiches.
 
 ### Export
 `Exporter (CSV)` : UTF-8 avec BOM (ouvre l'arabe correctement dans Excel), limité au périmètre, journalisé, protégé contre l'injection de formules.
@@ -87,7 +93,7 @@ gunzip -c backups/entraide-AAAAMMJJ-HHMMSS.sql.gz | docker compose exec -T db sh
 Copiez régulièrement `./backups` hors du serveur.
 
 ## API (résumé)
-`POST /api/auth/login|logout|change-password`, `GET /api/auth/me`, `GET /api/ref`, `GET|POST|PUT|DELETE /api/associations` (+ `POST /{id}/archive|unarchive`), `GET|POST|PUT|DELETE /api/beneficiaries`, `POST /api/beneficiaries/check`, `GET /api/beneficiaries/export.csv`, `GET /api/stats`, `GET /api/users` + `POST /{id}/reset-password` + `PUT /{id}/enabled` (admin), `GET /api/audit` (admin).
+`POST /api/auth/login|logout|change-password`, `GET /api/auth/me`, `GET /api/ref`, `GET /api/associations` + `POST|PUT|DELETE` (admin), `GET /api/etablissements` + `POST|PUT|DELETE` + `POST /{id}/archive|unarchive` (admin), `GET|POST|PUT|DELETE /api/beneficiaries`, `POST /api/beneficiaries/check`, `GET /api/beneficiaries/export.csv`, `GET /api/stats`, `GET /api/users` + `POST /{id}/reset-password` + `PUT /{id}/enabled` (admin), `GET /api/audit` (admin).
 
 ## Développement local
 ```bash
@@ -105,4 +111,4 @@ cd frontend && npm install && npm run dev
 Tests unitaires : `cd backend && mvn test`.
 
 ## Hors périmètre de cette version
-Fusion des doublons par l'admin, import de bénéficiaires existants, création de comptes depuis l'interface, gestion de la liste des catégories depuis l'interface (table prête), notifications.
+Fusion des doublons par l'admin, import de bénéficiaires existants, création de comptes depuis l'interface, gestion de la liste des catégories depuis l'interface (table prête), fusion d'associations homonymes, notifications.

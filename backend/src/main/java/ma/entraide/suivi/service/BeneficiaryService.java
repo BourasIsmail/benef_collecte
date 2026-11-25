@@ -1,8 +1,8 @@
 package ma.entraide.suivi.service;
 
-import ma.entraide.suivi.domain.Association;
 import ma.entraide.suivi.domain.Beneficiary;
-import ma.entraide.suivi.repo.AssociationRepository;
+import ma.entraide.suivi.domain.Etablissement;
+import ma.entraide.suivi.repo.EtablissementRepository;
 import ma.entraide.suivi.repo.BeneficiaryRepository;
 import ma.entraide.suivi.security.AppUserPrincipal;
 import ma.entraide.suivi.util.Text;
@@ -23,28 +23,28 @@ public class BeneficiaryService {
     private static final LocalDate MIN_DOB = LocalDate.of(1900, 1, 1);
 
     private final BeneficiaryRepository repo;
-    private final AssociationRepository associations;
+    private final EtablissementRepository etablissements;
     private final DedupService dedup;
     private final Scope scope;
     private final AuditService audit;
 
-    public BeneficiaryService(BeneficiaryRepository repo, AssociationRepository associations, DedupService dedup,
+    public BeneficiaryService(BeneficiaryRepository repo, EtablissementRepository etablissements, DedupService dedup,
                               Scope scope, AuditService audit) {
-        this.repo = repo; this.associations = associations; this.dedup = dedup; this.scope = scope; this.audit = audit;
+        this.repo = repo; this.etablissements = etablissements; this.dedup = dedup; this.scope = scope; this.audit = audit;
     }
 
     @Transactional(readOnly = true)
-    public PageDto<BeneficiaryDto> search(AppUserPrincipal me, String q, Long assoId, Long provId, String sexe, int page, int size) {
+    public PageDto<BeneficiaryDto> search(AppUserPrincipal me, String q, Long etabId, Long assoId, Long provId, String sexe, int page, int size) {
         var v = scope.of(me);
-        var p = repo.search(v.all(), v.ids(), assoId, provId, blankToNull(sexe), Text.searchTerm(q),
+        var p = repo.search(v.all(), v.ids(), etabId, assoId, provId, blankToNull(sexe), Text.searchTerm(q),
                 PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)));
         return new PageDto<>(p.getContent().stream().map(this::toDto).toList(), p.getTotalElements(), p.getNumber(), p.getSize());
     }
 
     @Transactional(readOnly = true)
-    public List<BeneficiaryDto> exportAll(AppUserPrincipal me, String q, Long assoId, Long provId, String sexe) {
+    public List<BeneficiaryDto> exportAll(AppUserPrincipal me, String q, Long etabId, Long assoId, Long provId, String sexe) {
         var v = scope.of(me);
-        return repo.searchAll(v.all(), v.ids(), assoId, provId, blankToNull(sexe), Text.searchTerm(q)).stream().map(this::toDto).toList();
+        return repo.searchAll(v.all(), v.ids(), etabId, assoId, provId, blankToNull(sexe), Text.searchTerm(q)).stream().map(this::toDto).toList();
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +61,7 @@ public class BeneficiaryService {
 
     @Transactional
     public BeneficiaryDto create(AppUserPrincipal me, BeneficiaryRequest r) {
-        Association a = writableAssociation(me, r.associationId());
+        Etablissement a = writableEtablissement(me, r.etablissementId());
         validate(r);
         String cin = normCin(r.cin());
         if (cin != null && repo.existsByCin(cin)) throw new ApiException(HttpStatus.CONFLICT, "CIN_EXISTS");
@@ -79,7 +79,7 @@ public class BeneficiaryService {
     public BeneficiaryDto update(AppUserPrincipal me, Long id, BeneficiaryRequest r) {
         Beneficiary b = find(id);
         requireWritable(me, b);
-        Association a = writableAssociation(me, r.associationId());
+        Etablissement a = writableEtablissement(me, r.etablissementId());
         validate(r);
         String cin = normCin(r.cin());
         if (cin != null && repo.existsByCinAndIdNot(cin, id)) throw new ApiException(HttpStatus.CONFLICT, "CIN_EXISTS");
@@ -103,8 +103,8 @@ public class BeneficiaryService {
 
     // ---- helpers
 
-    private void apply(Beneficiary b, Association a, BeneficiaryRequest r, String cin, AppUserPrincipal me) {
-        b.setAssociation(a);
+    private void apply(Beneficiary b, Etablissement a, BeneficiaryRequest r, String cin, AppUserPrincipal me) {
+        b.setEtablissement(a);
         b.setNomFr(Text.clean(r.nomFr()).toUpperCase());
         b.setPrenomFr(Text.clean(r.prenomFr()).toUpperCase());
         b.setNomAr(Text.clean(r.nomAr()));
@@ -128,12 +128,12 @@ public class BeneficiaryService {
         return cin.trim().toUpperCase().replaceAll("\\s+", "");
     }
 
-    private Association writableAssociation(AppUserPrincipal me, Long id) {
+    private Etablissement writableEtablissement(AppUserPrincipal me, Long id) {
         if (!Scope.canWrite(me)) throw new ApiException(HttpStatus.FORBIDDEN, "READ_ONLY");
-        Association a = associations.findById(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ASSOCIATION_NOT_FOUND"));
-        if (!scope.of(me).contains(a.getProvince().getId())) throw new ApiException(HttpStatus.FORBIDDEN, "OUT_OF_SCOPE");
-        if (!a.isActif()) throw new ApiException(HttpStatus.CONFLICT, "ASSOCIATION_ARCHIVED");
-        return a;
+        Etablissement e = etablissements.findWithRefs(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ETABLISSEMENT_NOT_FOUND"));
+        if (!scope.of(me).contains(e.getProvince().getId())) throw new ApiException(HttpStatus.FORBIDDEN, "OUT_OF_SCOPE");
+        if (!e.isActif()) throw new ApiException(HttpStatus.CONFLICT, "ETABLISSEMENT_ARCHIVED");
+        return e;
     }
 
     private Beneficiary find(Long id) {
@@ -142,7 +142,7 @@ public class BeneficiaryService {
     }
 
     private void requireVisible(AppUserPrincipal me, Beneficiary b) {
-        if (!scope.of(me).contains(b.getAssociation().getProvince().getId())) throw new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND");
+        if (!scope.of(me).contains(b.getEtablissement().getProvince().getId())) throw new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND");
     }
 
     private void requireWritable(AppUserPrincipal me, Beneficiary b) {
@@ -153,9 +153,10 @@ public class BeneficiaryService {
     private static String blankToNull(String s) { return s == null || s.isBlank() ? null : s; }
 
     private BeneficiaryDto toDto(Beneficiary b) {
-        var a = b.getAssociation();
-        var p = a.getProvince();
-        return new BeneficiaryDto(b.getId(), a.getId(), a.getNomAr(), p.getId(), p.getNomFr(), p.getNomAr(), b.getNomFr(),
-                b.getPrenomFr(), b.getNomAr(), b.getPrenomAr(), b.getDateNaissance(), b.getSexe(), b.getCin());
+        var e = b.getEtablissement();
+        var p = e.getProvince();
+        return new BeneficiaryDto(b.getId(), e.getId(), e.getNomAr(), e.getAssociation().getId(), e.getAssociation().getNomAr(),
+                p.getId(), p.getNomFr(), p.getNomAr(), b.getNomFr(), b.getPrenomFr(), b.getNomAr(), b.getPrenomAr(),
+                b.getDateNaissance(), b.getSexe(), b.getCin());
     }
 }

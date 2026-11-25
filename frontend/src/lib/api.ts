@@ -35,22 +35,24 @@ export interface Region { id: number; code: string; nomFr: string; nomAr: string
 export interface Province { id: number; code: string; regionId: number; nomFr: string; nomAr: string }
 export interface Category { id: number; code: string; nomFr: string; nomAr: string }
 export interface RefData { regions: Region[]; provinces: Province[]; categories: Category[] }
-export interface Association {
-  id: number; provinceId: number; provinceNomFr: string; provinceNomAr: string; nomAr: string;
-  actif: boolean; categoryId?: number; beneficiaryCount: number;
+export interface Association { id: number; nomAr: string; etablissementCount: number; beneficiaryCount: number }
+export interface Etablissement {
+  id: number; associationId: number; associationNom: string; provinceId: number; provinceNomFr: string; provinceNomAr: string;
+  categoryId: number; nomAr: string; typeEtablissement?: string; numeroLicence?: string; actif: boolean; beneficiaryCount: number;
 }
 export interface Beneficiary {
-  id: number; associationId: number; associationNom: string; provinceId: number; provinceNomFr: string; provinceNomAr: string;
+  id: number; etablissementId: number; etablissementNom: string; associationId: number; associationNom: string;
+  provinceId: number; provinceNomFr: string; provinceNomAr: string;
   nomFr: string; prenomFr: string; nomAr: string; prenomAr: string; dateNaissance: string; sexe: 'F' | 'M'; cin?: string;
 }
 export interface Page<T> { items: T[]; total: number; page: number; size: number }
-export interface Match { id?: number; nomFr?: string; prenomFr?: string; dateNaissance?: string; associationNom?: string; provinceNomFr?: string; provinceNomAr?: string; visible: boolean }
+export interface Match { id?: number; nomFr?: string; prenomFr?: string; dateNaissance?: string; etablissementNom?: string; associationNom?: string; provinceNomFr?: string; provinceNomAr?: string; visible: boolean }
 export interface CheckResult { key: string; exact: Match[]; similar: { match: Match; reason: string }[] }
 export interface Count { label: string; labelAr: string; count: number }
 export interface Stats {
-  total: number; girls: number; boys: number; associations: number; provinces: number;
-  byProvince: Count[]; byAssociation: Count[]; ageBands: Count[];
-  associationsByCategory: Count[]; latest: { id: number; nomFr: string; prenomFr: string; sexe: string; associationNom: string }[];
+  total: number; girls: number; boys: number; associations: number; etablissements: number; provinces: number;
+  byProvince: Count[]; byEtablissement: Count[]; ageBands: Count[]; etablissementsByCategory: Count[];
+  latest: { id: number; nomFr: string; prenomFr: string; sexe: string; etablissementNom: string }[];
 }
 export interface UserRow { id: number; email: string; role: Role; provinceNomFr?: string; regionNomFr?: string; enabled: boolean; mustChangePassword: boolean; lastLogin?: string }
 export interface AuditRow { id: number; at: string; userEmail?: string; action: string; entity?: string; entityId?: number; details?: string }

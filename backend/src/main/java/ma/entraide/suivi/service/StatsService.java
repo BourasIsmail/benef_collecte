@@ -16,6 +16,7 @@ public class StatsService {
 
     public StatsService(EntityManager em, Scope scope) { this.em = em; this.scope = scope; }
 
+    /** Perimeter filter on the province of the établissement (alias p). */
     private static final String SCOPE = "(:all = true or p.id in (:ids))";
 
     @SuppressWarnings("unchecked")
@@ -31,22 +32,24 @@ public class StatsService {
     @Transactional(readOnly = true)
     public Stats compute(AppUserPrincipal me) {
         var v = scope.of(me);
-        String base = " from beneficiaires b join associations a on a.id = b.association_id join provinces p on p.id = a.province_id where b.statut = 'ACTIF' and " + SCOPE;
+        String base = " from beneficiaires b join etablissements e on e.id = b.etablissement_id join provinces p on p.id = e.province_id "
+                + "where b.statut = 'ACTIF' and " + SCOPE;
 
         Object[] totals = rows("select count(*), coalesce(sum(b.sexe = 'F'), 0)" + base, v).get(0);
         long total = num(totals[0]), girls = num(totals[1]);
 
-        long assoCount = num(rows("select count(*) from associations a join provinces p on p.id = a.province_id where a.actif = true and " + SCOPE, v).get(0));
+        long etabCount = num(rows("select count(*) from etablissements e join provinces p on p.id = e.province_id where e.actif = true and " + SCOPE, v).get(0));
+        long assoCount = num(rows("select count(distinct e.association_id) from etablissements e join provinces p on p.id = e.province_id where e.actif = true and " + SCOPE, v).get(0));
         long provCount = num(rows("select count(*) from provinces p where " + SCOPE, v).get(0));
 
-        List<Count> byProvince = rows("select p.nom_fr, p.nom_ar, count(b.id) from provinces p left join associations a on a.province_id = p.id "
-                + "left join beneficiaires b on b.association_id = a.id and b.statut = 'ACTIF' where " + SCOPE
+        List<Count> byProvince = rows("select p.nom_fr, p.nom_ar, count(b.id) from provinces p left join etablissements e on e.province_id = p.id "
+                + "left join beneficiaires b on b.etablissement_id = e.id and b.statut = 'ACTIF' where " + SCOPE
                 + " group by p.id, p.nom_fr, p.nom_ar order by count(b.id) desc, p.nom_fr", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 
-        List<Count> byAsso = rows("select a.nom_ar, a.nom_ar, count(b.id) from associations a join provinces p on p.id = a.province_id "
-                + "left join beneficiaires b on b.association_id = a.id and b.statut = 'ACTIF' where a.actif = true and " + SCOPE
-                + " group by a.id, a.nom_ar order by count(b.id) desc, a.nom_ar limit 15", v)
+        List<Count> byEtab = rows("select e.nom_ar, e.nom_ar, count(b.id) from etablissements e join provinces p on p.id = e.province_id "
+                + "left join beneficiaires b on b.etablissement_id = e.id and b.statut = 'ACTIF' where e.actif = true and " + SCOPE
+                + " group by e.id, e.nom_ar order by count(b.id) desc, e.nom_ar limit 15", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 
         // age bands (beneficiaries cover all ages: children, adults, elderly)
@@ -56,14 +59,14 @@ public class StatsService {
         List<Count> ageBands = new ArrayList<>();
         for (int i = 0; i < ageLabels.length; i++) ageBands.add(new Count(ageLabels[i], ageLabels[i], num(age[i])));
 
-        List<Count> byCat = rows("select c.nom_fr, c.nom_ar, count(a.id) from categories c "
-                + "left join (select a.id, a.category_id from associations a join provinces p on p.id = a.province_id where a.actif = true and " + SCOPE + ") a on a.category_id = c.id "
-                + "where c.actif = true group by c.id, c.nom_fr, c.nom_ar order by count(a.id) desc, c.id", v)
+        List<Count> byCat = rows("select c.nom_fr, c.nom_ar, count(x.id) from categories c "
+                + "left join (select e.id, e.category_id from etablissements e join provinces p on p.id = e.province_id where e.actif = true and " + SCOPE + ") x on x.category_id = c.id "
+                + "where c.actif = true group by c.id, c.nom_fr, c.nom_ar order by count(x.id) desc, c.id", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 
-        List<LatestDto> latest = rows("select b.id, b.nom_fr, b.prenom_fr, b.sexe, a.nom_ar" + base + " order by b.created_at desc, b.id desc limit 6", v)
+        List<LatestDto> latest = rows("select b.id, b.nom_fr, b.prenom_fr, b.sexe, e.nom_ar" + base + " order by b.created_at desc, b.id desc limit 6", v)
                 .stream().map(r -> new LatestDto(num(r[0]), (String) r[1], (String) r[2], String.valueOf(r[3]), (String) r[4])).toList();
 
-        return new Stats(total, girls, total - girls, assoCount, provCount, byProvince, byAsso, ageBands, byCat, latest);
+        return new Stats(total, girls, total - girls, assoCount, etabCount, provCount, byProvince, byEtab, ageBands, byCat, latest);
     }
 }

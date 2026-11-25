@@ -18,26 +18,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Loads regions, provinces, associations and categories (from the original Excel) on first start only. */
+/**
+ * First start only. Regions/provinces come from the beneficiary workbook; categories, associations and
+ * établissements come from the "base EPS 2026" workbook (one sheet per category).
+ */
 @Component @Order(1)
 public class ReferenceDataSeeder implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(ReferenceDataSeeder.class);
 
     record RegionSeed(String code, String nomFr, String nomAr) {}
     record ProvinceSeed(String code, String nomFr, String nomAr, String region) {}
-    record AssociationSeed(String province, String nomAr) {}
+    record AssociationSeed(String nomAr) {}
+    record EtablissementSeed(String association, String province, String categorie, String nomAr, String type, String licence) {}
 
     private final RegionRepository regions;
     private final ProvinceRepository provinces;
     private final CategoryRepository categories;
     private final AssociationRepository associations;
+    private final EtablissementRepository etablissements;
     private final ObjectMapper mapper;
     private final TransactionTemplate tx;
 
     public ReferenceDataSeeder(RegionRepository regions, ProvinceRepository provinces, CategoryRepository categories,
-                               AssociationRepository associations, ObjectMapper mapper, TransactionTemplate tx) {
+                               AssociationRepository associations, EtablissementRepository etablissements,
+                               ObjectMapper mapper, TransactionTemplate tx) {
         this.regions = regions; this.provinces = provinces; this.categories = categories;
-        this.associations = associations; this.mapper = mapper; this.tx = tx;
+        this.associations = associations; this.etablissements = etablissements; this.mapper = mapper; this.tx = tx;
     }
 
     @Override
@@ -55,16 +61,27 @@ public class ReferenceDataSeeder implements ApplicationRunner {
                 e.setRegion(regionByCode.get(p.region()));
                 provinceByCode.put(p.code(), provinces.save(e));
             }
+            Map<String, Category> categoryByCode = new HashMap<>();
             for (RegionSeed c : read("seed/categories.json", new TypeReference<List<RegionSeed>>() {})) {
                 Category e = new Category(); e.setCode(c.code()); e.setNomFr(c.nomFr()); e.setNomAr(c.nomAr());
-                categories.save(e);
+                categoryByCode.put(c.code(), categories.save(e));
+            }
+            Map<String, Association> assoByName = new HashMap<>();
+            for (AssociationSeed a : read("seed/associations.json", new TypeReference<List<AssociationSeed>>() {})) {
+                Association e = new Association(); e.setNomAr(a.nomAr());
+                assoByName.put(a.nomAr(), associations.save(e));
             }
             int n = 0;
-            for (AssociationSeed a : read("seed/associations.json", new TypeReference<List<AssociationSeed>>() {})) {
-                Association e = new Association(); e.setProvince(provinceByCode.get(a.province())); e.setNomAr(a.nomAr());
-                associations.save(e); n++;
+            for (EtablissementSeed x : read("seed/etablissements.json", new TypeReference<List<EtablissementSeed>>() {})) {
+                Etablissement e = new Etablissement();
+                e.setAssociation(assoByName.get(x.association()));
+                e.setProvince(provinceByCode.get(x.province()));
+                e.setCategory(categoryByCode.get(x.categorie()));
+                e.setNomAr(x.nomAr()); e.setTypeEtablissement(x.type()); e.setNumeroLicence(x.licence());
+                etablissements.save(e); n++;
             }
-            log.info("Données de référence chargées : {} régions, {} provinces, {} associations", regionByCode.size(), provinceByCode.size(), n);
+            log.info("Données de référence chargées : {} régions, {} provinces, {} catégories, {} associations, {} établissements",
+                    regionByCode.size(), provinceByCode.size(), categoryByCode.size(), assoByName.size(), n);
         });
     }
 

@@ -24,6 +24,7 @@ export function Shell({ children }: { children: ReactNode }) {
     { href: '/beneficiaries', icon: 'list', label: 'nav_beneficiaries', exact: true },
     ...(canWrite(me) ? [{ href: '/beneficiaries/new', icon: 'form', label: 'nav_new' }] : []),
     { href: '/associations', icon: 'asso', label: 'nav_associations' },
+    { href: '/etablissements', icon: 'etab', label: 'nav_etablissements' },
     ...(me.role === 'ADMIN' ? [{ href: '/users', icon: 'users', label: 'nav_users' }, { href: '/audit', icon: 'audit', label: 'nav_audit' }] : []),
   ];
   const active = (h: string, exact?: boolean) => (exact ? path === h || /^\/beneficiaries\/\d+/.test(path) : path === h || path.startsWith(h + '/'));

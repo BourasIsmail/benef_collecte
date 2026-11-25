@@ -93,7 +93,7 @@ svg{flex:none}
 .filters{display:flex;gap:10px;flex-wrap:wrap}
 .field{position:relative;flex:1 1 170px;display:flex;align-items:center}
 .field svg{position:absolute;inset-inline-start:12px;color:var(--muted);pointer-events:none}
-.field input{padding-inline-start:38px}
+.field input[type=text]{padding-inline-start:38px}
 input[type=text],input[type=email],input[type=password],input[type=date],select{background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;min-width:0;width:100%}
 input:focus,select:focus{border-color:var(--brand);outline:0;background:var(--surface)}
 .filters select{flex:1 1 160px;width:auto}
@@ -189,3 +189,11 @@ a{color:inherit;text-decoration:none}
 .muted{color:var(--muted)}
 .req{color:var(--bad);font-weight:700;margin-inline-start:3px}
 .cb.radio input{accent-color:var(--brand)}
+.ss{position:relative}
+.ss input{width:100%}
+.ss-list{position:absolute;inset-inline:0;top:calc(100% + 4px);z-index:30;max-height:280px;overflow:auto;margin:0;padding:6px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.ss-opt{padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;gap:1px;color:var(--ink);font-weight:500;font-size:13px}
+.ss-opt.on{background:var(--brand-soft)} .ss-opt[aria-selected="true"]{font-weight:700;color:var(--brand)}
+.ss-opt small{color:var(--muted);font-weight:400;font-size:11.5px}
+.ss-empty{padding:8px 10px;color:var(--muted);font-size:12px}
+.ro-note{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12.5px}

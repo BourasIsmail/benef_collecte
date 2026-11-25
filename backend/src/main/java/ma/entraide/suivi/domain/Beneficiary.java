@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Entity @Table(name = "beneficiaires") @Getter @Setter
 public class Beneficiary {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "association_id") private Association association;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "etablissement_id") private Etablissement etablissement;
     @Column(name = "nom_ar") private String nomAr;
     @Column(name = "prenom_ar") private String prenomAr;
     @Column(name = "nom_fr") private String nomFr;

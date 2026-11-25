@@ -50,7 +50,7 @@ export default function Dashboard() {
       <div className="grid g4">
         {kpi('c-brand', 'list', s.total, t('kpi_b'))}
         {kpi('c-brand', 'asso', s.associations, t('kpi_a'))}
-        {kpi('c-brand', 'pin', s.provinces, t('kpi_p'))}
+        {kpi('c-brand', 'etab', s.etablissements, t('kpi_e'))}
         {kpi('c-pink', 'heart', s.total ? gp + '%' : '–', t('kpi_f'))}
       </div>
       <div className="grid g21">
@@ -71,17 +71,17 @@ export default function Dashboard() {
       </div>
       <div className="grid g21">
         <div className="card">
-          <div className="head"><h2>{multiProvince ? t('byProvince') : t('byAssociation')}</h2>{multiProvince && s.byProvince.length > provItems.length && <span>+{s.byProvince.length - provItems.length} {t('moreProvinces')}</span>}</div>
-          <Bars items={multiProvince ? provItems : s.byAssociation} color="var(--brand)" lang={lang} />
+          <div className="head"><h2>{multiProvince ? t('byProvince') : t('byEtablissement')}</h2>{multiProvince && s.byProvince.length > provItems.length && <span>+{s.byProvince.length - provItems.length} {t('moreProvinces')}</span>}</div>
+          <Bars items={multiProvince ? provItems : s.byEtablissement} color="var(--brand)" lang={lang} />
         </div>
-        <div className="card"><div className="head"><h2>{t('byCategory')}</h2></div><Bars items={s.associationsByCategory} color="var(--brand2)" lang={lang} /></div>
+        <div className="card"><div className="head"><h2>{t('byCategory')}</h2></div><Bars items={s.etablissementsByCategory} color="var(--brand2)" lang={lang} /></div>
         <div className="card">
           <div className="head"><h2>{t('latest')}</h2></div>
           <div className="feed">
             {s.latest.map((b) => (
               <div className="row" key={b.id}>
                 <span className={`av ${b.sexe}`}>{initials(b)}</span>
-                <div><b>{b.prenomFr} {b.nomFr}</b><small>{b.associationNom}</small></div>
+                <div><b>{b.prenomFr} {b.nomFr}</b><small>{b.etablissementNom}</small></div>
               </div>
             ))}
             {s.latest.length === 0 && <span className="muted">{t('empty')}</span>}
