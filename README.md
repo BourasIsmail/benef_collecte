@@ -6,23 +6,58 @@ Application web de saisie contrôlée et d'analyse des bénéficiaires, héberg�
 |---|---|
 | Interface | Next.js 14 (React, TypeScript), FR / AR (RTL), polices embarquées (fonctionne hors ligne) |
 | API | Java 21, Spring Boot 3.3, Spring Security (JWT en cookie HttpOnly), JPA, Flyway |
-| Base | MySQL 8.4 (utf8mb4) |
-| Déploiement | Docker Compose : `db`, `backend`, `frontend`, `backup` |
+| Base | MySQL (utf8mb4), serveur externe ou conteneur local pour les tests |
+| Déploiement | Docker Compose : `backend`, `frontend`, `backup` (+ `db` en mode test) |
 
 ## Démarrage
 
+Deux modes, avec le même code :
+
+- **Base MySQL externe (production, VM)** : c'est le mode par défaut de `docker-compose.yml`.
+- **Base MySQL locale dans Docker (tests)** : avec `docker-compose.localdb.yml` en plus.
+
+### Déploiement sur une VM avec une base MySQL externe
+
+Prérequis : Docker avec le plugin Compose sur la VM, et un accès réseau de la VM vers le serveur MySQL (port 3306).
+
+La base doit être **vide et dédiée** à l'application. Les tables sont créées automatiquement au premier démarrage (Flyway) ; si la base contient déjà d'autres tables, Flyway refuse de démarrer. L'utilisateur MySQL doit avoir tous les droits sur cette base (créer, modifier, indexer, clés étrangères).
+
 ```bash
+git clone https://github.com/BourasIsmail/benef_collecte.git
+cd benef_collecte
 cp .env.example .env
 ```
 
-Éditer `.env` : remplacer toutes les valeurs `CHANGER-…` (mots de passe MySQL, `APP_JWT_SECRET` d'au moins 32 caractères : `openssl rand -base64 48`).
+Dans `.env`, renseigner la base et les secrets (les mots de passe ne vont jamais dans le dépôt) :
+
+```ini
+DB_HOST=<IP du serveur MySQL>
+DB_PORT=3306
+DB_NAME=<nom de la base>
+DB_USER=<utilisateur MySQL>
+DB_PASSWORD=<mot de passe MySQL>
+# DB_PARAMS=useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true   (valeur par défaut)
+
+APP_JWT_SECRET=<au moins 32 caractères : openssl rand -base64 48>
+APP_DEFAULT_PASSWORD=Entraide@2026
+WEB_PORT=3000
+```
 
 ```bash
 docker compose up -d --build
+docker compose logs -f backend      # attendre « Comptes créés au premier démarrage »
 ```
 
-L'application est disponible sur http://localhost:3000 (port réglable avec `WEB_PORT`).
-Seul le frontend est exposé : l'API et la base ne sont joignables que depuis le réseau Docker.
+L'application est alors disponible sur `http://<IP de la VM>:3000` (`WEB_PORT=80` pour utiliser le port 80). Seul le frontend est exposé : l'API n'est joignable que depuis le réseau Docker.
+
+### Test avec une base MySQL locale dans Docker
+
+```bash
+cp .env.example .env     # renseigner DB_PASSWORD, MYSQL_ROOT_PASSWORD, APP_JWT_SECRET ; ne pas définir DB_HOST / DB_NAME / DB_USER
+docker compose -f docker-compose.yml -f docker-compose.localdb.yml up -d --build
+```
+
+L'application est disponible sur http://localhost:3000. Pour repartir d'une base locale vierge : `docker compose -f docker-compose.yml -f docker-compose.localdb.yml down -v` (⚠ efface la base locale).
 
 ### Comptes créés au premier démarrage (une seule fois)
 
@@ -45,7 +80,7 @@ Chargées au premier démarrage (`backend/src/main/resources/seed/*.json`) :
 Les bénéficiaires ne sont **pas** importés : l'application démarre sans bénéficiaire.
 À relire : noms arabes des provinces et rattachements aux régions (proposés par nous). Aousserd est confirmée (82 provinces).
 
-> **Mise à jour depuis une version précédente** : le schéma a changé (établissements). Pour repartir d'une base propre : `docker compose down -v` (⚠ efface la base) puis `docker compose up -d --build`.
+> **Mise à jour depuis une version précédente** : le schéma et les données de référence ont changé (établissements, 9 établissements ajoutés). Elles ne se chargent qu'au premier démarrage : pour repartir d'une base propre, videz la base (ou supprimez toutes ses tables), puis `docker compose up -d --build`.
 
 ## Fonctionnement
 
@@ -81,7 +116,7 @@ Tous les tableaux (bénéficiaires, associations, établissements, utilisateurs,
 - **À faire avant la mise en production** : changer tous les secrets de `.env`, servir le site en HTTPS (reverse proxy du réseau local), restreindre l'accès réseau au serveur.
 
 ## Sauvegardes
-Le service `backup` produit chaque nuit à 02:00 un `mysqldump` compressé dans `./backups` (14 jours conservés, `BACKUP_KEEP_DAYS`). Sauvegarde immédiate :
+Le service `backup` se connecte à la base (`DB_HOST`…) et produit chaque nuit à 02:00 un `mysqldump` compressé dans `./backups` (14 jours conservés, `BACKUP_KEEP_DAYS`). Si l'équipe qui gère le serveur MySQL sauvegarde déjà cette base, vous pouvez arrêter ce service (`docker compose stop backup`). Sauvegarde immédiate :
 
 ```bash
 docker compose exec backup bash /backup.sh once
@@ -90,7 +125,7 @@ docker compose exec backup bash /backup.sh once
 Restauration :
 
 ```bash
-gunzip -c backups/entraide-AAAAMMJJ-HHMMSS.sql.gz | docker compose exec -T db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" entraide'
+gunzip -c backups/entraide-AAAAMMJJ-HHMMSS.sql.gz | mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME>
 ```
 
 Copiez régulièrement `./backups` hors du serveur.
@@ -115,3 +150,8 @@ Tests unitaires : `cd backend && mvn test`.
 
 ## Hors périmètre de cette version
 Fusion des doublons par l'admin, import de bénéficiaires existants, création de comptes depuis l'interface, gestion de la liste des catégories depuis l'interface (table prête), fusion d'associations homonymes, notifications.
+
+## Notes d'exploitation
+- **Fuseau horaire** : l'URL JDBC `serverTimezone=UTC` est compatible. Vérifié : les dates de naissance ne bougent pas ; la date/heure d'enregistrement est stockée en heure du Maroc (le conteneur tourne en `Africa/Casablanca`), telle qu'affichée dans le journal d'audit.
+- **Utilisateurs et Journal** : ces deux écrans (et les API correspondantes) sont réservés à l'administrateur. Les comptes province et région ne les voient pas.
+- **Connexion à la base** : en cas d'échec au démarrage, `docker compose logs backend` indique la cause (réseau, identifiants, base non vide, droits insuffisants).

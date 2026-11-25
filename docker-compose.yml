@@ -1,35 +1,16 @@
-# Suivi des bénéficiaires : MySQL + API Spring Boot + interface Next.js
-# Seul le frontend est exposé. La base et l'API ne sont joignables que depuis le réseau Docker interne.
+# Suivi des bénéficiaires : API Spring Boot + interface Next.js + sauvegarde, avec une base MySQL EXTERNE (voir .env).
+# Seul le frontend est exposé ; l'API n'est joignable que depuis le réseau Docker.
+#
+# Base MySQL locale dans Docker (tests / développement) :
+#   docker compose -f docker-compose.yml -f docker-compose.localdb.yml up -d --build
 services:
-  db:
-    image: mysql:8.4
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?définir MYSQL_ROOT_PASSWORD dans .env}
-      MYSQL_DATABASE: entraide
-      MYSQL_USER: entraide
-      MYSQL_PASSWORD: ${DB_PASSWORD:?définir DB_PASSWORD dans .env}
-      TZ: Africa/Casablanca
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=+01:00"]
-    volumes:
-      - dbdata:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-      start_period: 20s
-
   backend:
     build: ./backend
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://db:3306/entraide?useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=Africa/Casablanca
-      DB_USER: entraide
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:mysql://${DB_HOST:-db}:${DB_PORT:-3306}/${DB_NAME:-entraide}?${DB_PARAMS:-useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+      DB_USER: ${DB_USER:-entraide}
+      DB_PASSWORD: ${DB_PASSWORD:?définir DB_PASSWORD dans .env}
       APP_JWT_SECRET: ${APP_JWT_SECRET:?définir APP_JWT_SECRET dans .env (32 caractères minimum)}
       APP_DEFAULT_PASSWORD: ${APP_DEFAULT_PASSWORD:?définir APP_DEFAULT_PASSWORD dans .env}
       APP_ADMIN_EMAIL: ${APP_ADMIN_EMAIL:-admin@entraide.ma}
@@ -41,7 +22,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
-      start_period: 30s
+      start_period: 40s
 
   frontend:
     build:
@@ -59,13 +40,11 @@ services:
   backup:
     image: mysql:8.4
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      MYSQL_HOST: db
-      MYSQL_DATABASE: entraide
-      MYSQL_USER: entraide
+      MYSQL_HOST: ${DB_HOST:-db}
+      MYSQL_PORT: ${DB_PORT:-3306}
+      MYSQL_DATABASE: ${DB_NAME:-entraide}
+      MYSQL_USER: ${DB_USER:-entraide}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
       TZ: Africa/Casablanca
@@ -73,6 +52,3 @@ services:
       - ./scripts/backup.sh:/backup.sh:ro
       - ./backups:/backups
     entrypoint: ["bash", "/backup.sh"]
-
-volumes:
-  dbdata:

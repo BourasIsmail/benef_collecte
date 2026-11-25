@@ -7,7 +7,7 @@ KEEP=${BACKUP_KEEP_DAYS:-14}
 
 dump() {
   local f="$OUT/entraide-$(date +%Y%m%d-%H%M%S).sql.gz"
-  MYSQL_PWD="$MYSQL_PASSWORD" mysqldump -h "$MYSQL_HOST" -u "$MYSQL_USER" --single-transaction --no-tablespaces \
+  MYSQL_PWD="$MYSQL_PASSWORD" mysqldump -h "$MYSQL_HOST" -P "${MYSQL_PORT:-3306}" -u "$MYSQL_USER" --single-transaction --no-tablespaces \
     --default-character-set=utf8mb4 "$MYSQL_DATABASE" | gzip > "$f.tmp"
   mv "$f.tmp" "$f"
   find "$OUT" -name 'entraide-*.sql.gz' -mtime +"$KEEP" -delete
