@@ -8,6 +8,8 @@ import { Modal } from '@/components/Modal';
 import { SearchSelect } from '@/components/SearchSelect';
 import { useToast } from '@/lib/toast';
 import { pick } from '@/lib/util';
+import { Pager } from '@/components/Pager';
+import { usePaged } from '@/lib/paging';
 
 type Dlg = { kind: 'edit'; e: Etablissement | null } | { kind: 'delete'; e: Etablissement } | null;
 
@@ -39,6 +41,7 @@ export default function EtablissementsPage() {
   }, [q, prov, cat, asso, archived, err]);
   useEffect(() => { const h = setTimeout(load, 200); return () => clearTimeout(h); }, [load]);
 
+  const pg = usePaged(list, [q, prov, cat, asso, archived].join('|'));
   const assocOptions = useMemo(() => [{ value: '', label: t('allAssociations') }, ...assos.map((a) => ({ value: String(a.id), label: a.nomAr, hint: pick(lang, { nomFr: a.provinceNomFr, nomAr: a.provinceNomAr }) }))], [assos, t, lang]);
 
   async function setActive(e: Etablissement, active: boolean) {
@@ -70,6 +73,7 @@ export default function EtablissementsPage() {
             {ref.categories.map((c) => <option key={c.id} value={c.id}>{pick(lang, c)}</option>)}
           </select>
           <div style={{ flex: '1 1 220px', minWidth: 0 }}><SearchSelect id="filterAssociation" options={assocOptions} value={asso} onChange={setAsso} placeholder={t('allAssociations')} /></div>
+          {(q || prov || cat || asso || archived) && <button className="linkbtn" type="button" onClick={() => { setQ(''); setProv(''); setCat(''); setAsso(''); setArchived(false); }}>{t('resetFilters')}</button>}
           {admin && <label className="check-row"><input type="checkbox" checked={archived} onChange={(e) => setArchived(e.target.checked)} />{t('etabShowArchived')}</label>}
         </div>
         {!admin && <p className="ro-note" style={{ marginTop: 12 }}><Icon name="eye" size={16} />{t('readOnlyHint')}</p>}
@@ -78,7 +82,7 @@ export default function EtablissementsPage() {
           <table>
             <thead><tr><th>{t('colEtablissement')}</th><th>{t('colAssociation')}</th><th>{t('colProvince')}</th><th>{t('colCategories')}</th><th>{t('colType')}</th><th>{t('colLicense')}</th><th>{t('colBeneficiaries')}</th>{admin && <th />}</tr></thead>
             <tbody>
-              {list?.map((e) => (
+              {pg.rows?.map((e) => (
                 <tr key={e.id}>
                   <td><div className="person"><span className="chip c-brand" style={{ width: 36, height: 36 }}><Icon name="etab" /></span><div><b className="ar" style={{ color: 'var(--ink)', fontSize: 14 }}>{e.nomAr}</b>{!e.actif && <div><span className="pill off">{t('etabArchivedTag')}</span></div>}</div></div></td>
                   <td className="ar" style={{ color: 'var(--ink)' }}>{e.associationNom}</td>
@@ -98,7 +102,7 @@ export default function EtablissementsPage() {
             </tbody>
           </table>
         </div>
-        <div className="pager"><span>{list?.length ?? 0} {t('results')}</span></div>
+        <Pager total={pg.total} page={pg.page} size={pg.size} onPage={pg.setPage} onSize={pg.setSize} />
       </div>
       {dlg?.kind === 'edit' && <EditDialog e={dlg.e} ref_={ref} assocOptions={assocOptions.slice(1)} onClose={() => setDlg(null)} onSaved={() => { setDlg(null); toast(t('etabSaved')); load(); }} />}
       {dlg?.kind === 'delete' && <DeleteDialog e={dlg.e} onClose={() => setDlg(null)} onDone={(m) => { setDlg(null); toast(m); load(); }} />}

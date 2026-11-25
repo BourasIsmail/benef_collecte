@@ -40,10 +40,19 @@ public class MiscControllers {
         private final AuditLogRepository repo;
         public AuditController(AuditLogRepository repo) { this.repo = repo; }
         @GetMapping
-        public PageDto<AuditDto> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
-            var p = repo.findAll(PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200), Sort.by(Sort.Direction.DESC, "id")));
+        public PageDto<AuditDto> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size,
+                                      @RequestParam(required = false) String action, @RequestParam(required = false) String user,
+                                      @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+                                      @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate to) {
+            var f = (from == null ? java.time.LocalDate.of(2000, 1, 1) : from).atStartOfDay();
+            var t = (to == null ? java.time.LocalDate.of(2100, 1, 1) : to.plusDays(1)).atStartOfDay();
+            var p = repo.search(action == null || action.isBlank() ? null : action, user == null || user.isBlank() ? null : user.trim(), f, t,
+                    PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200)));
             return new PageDto<>(p.getContent().stream().map(MiscControllers::toDto).toList(), p.getTotalElements(), p.getNumber(), p.getSize());
         }
+
+        @GetMapping("/actions")
+        public List<String> actions() { return repo.actions(); }
     }
 
     static AuditDto toDto(AuditLog l) {

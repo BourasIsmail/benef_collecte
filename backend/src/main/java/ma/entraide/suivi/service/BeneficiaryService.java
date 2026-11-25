@@ -34,17 +34,17 @@ public class BeneficiaryService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<BeneficiaryDto> search(AppUserPrincipal me, String q, Long etabId, Long assoId, Long provId, String sexe, int page, int size) {
+    public PageDto<BeneficiaryDto> search(AppUserPrincipal me, String q, Long etabId, Long catId, Long assoId, Long provId, String sexe, int page, int size) {
         var v = scope.of(me);
-        var p = repo.search(v.all(), v.ids(), etabId, assoId, provId, blankToNull(sexe), Text.searchTerm(q),
+        var p = repo.search(v.all(), v.ids(), etabId, catId, assoId, provId, blankToNull(sexe), Text.searchTerm(q),
                 PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)));
         return new PageDto<>(p.getContent().stream().map(this::toDto).toList(), p.getTotalElements(), p.getNumber(), p.getSize());
     }
 
     @Transactional(readOnly = true)
-    public List<BeneficiaryDto> exportAll(AppUserPrincipal me, String q, Long etabId, Long assoId, Long provId, String sexe) {
+    public List<BeneficiaryDto> exportAll(AppUserPrincipal me, String q, Long etabId, Long catId, Long assoId, Long provId, String sexe) {
         var v = scope.of(me);
-        return repo.searchAll(v.all(), v.ids(), etabId, assoId, provId, blankToNull(sexe), Text.searchTerm(q)).stream().map(this::toDto).toList();
+        return repo.searchAll(v.all(), v.ids(), etabId, catId, assoId, provId, blankToNull(sexe), Text.searchTerm(q)).stream().map(this::toDto).toList();
     }
 
     @Transactional(readOnly = true)

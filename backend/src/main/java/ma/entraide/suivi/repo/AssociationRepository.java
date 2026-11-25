@@ -15,6 +15,9 @@ public interface AssociationRepository extends JpaRepository<Association, Long> 
     @Query("select a from Association a join fetch a.province p where (:all = true or p.id in :ids) order by p.nomFr, a.nomAr")
     List<Association> findScoped(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
 
+    @Query("select distinct e.association.id from Etablissement e where e.category.id = :cat and e.actif = true")
+    java.util.Set<Long> idsWithCategory(@Param("cat") Long categoryId);
+
     @Query("select a from Association a join fetch a.province where a.id = :id")
     java.util.Optional<Association> findWithProvince(@Param("id") Long id);
 

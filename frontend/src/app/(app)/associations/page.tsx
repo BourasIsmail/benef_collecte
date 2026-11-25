@@ -7,6 +7,8 @@ import { Icon } from '@/lib/icons';
 import { Modal } from '@/components/Modal';
 import { useToast } from '@/lib/toast';
 import { pick } from '@/lib/util';
+import { Pager } from '@/components/Pager';
+import { usePaged } from '@/lib/paging';
 
 type Dlg = { kind: 'edit'; a: Association | null } | { kind: 'delete'; a: Association } | null;
 
@@ -19,6 +21,7 @@ export default function AssociationsPage() {
   const [list, setList] = useState<Association[] | null>(null);
   const [q, setQ] = useState('');
   const [prov, setProv] = useState('');
+  const [cat, setCat] = useState('');
   const [dlg, setDlg] = useState<Dlg>(null);
   const [error, setError] = useState('');
 
@@ -26,8 +29,10 @@ export default function AssociationsPage() {
     const p = new URLSearchParams();
     if (q.trim()) p.set('q', q.trim());
     if (prov) p.set('provinceId', prov);
+    if (cat) p.set('categoryId', cat);
     api<Association[]>('/associations?' + p).then(setList).catch((e) => setError(err(e instanceof ApiError ? e.code : 'INTERNAL')));
-  }, [q, prov, err]);
+  }, [q, prov, cat, err]);
+  const pg = usePaged(list, [q, prov, cat].join('|'));
   useEffect(() => { api<RefData>('/ref').then(setRef); }, []);
   useEffect(() => { const h = setTimeout(load, 200); return () => clearTimeout(h); }, [load]);
 
@@ -49,6 +54,11 @@ export default function AssociationsPage() {
               {ref.provinces.map((p) => <option key={p.id} value={p.id}>{pick(lang, p)}</option>)}
             </select>
           )}
+          <select value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t('allCategories')}>
+            <option value="">{t('allCategories')}</option>
+            {ref.categories.map((c) => <option key={c.id} value={c.id}>{pick(lang, c)}</option>)}
+          </select>
+          {(q || prov || cat) && <button className="linkbtn" type="button" onClick={() => { setQ(''); setProv(''); setCat(''); }}>{t('resetFilters')}</button>}
           {!admin && <span className="ro-note"><Icon name="eye" size={16} />{t('readOnlyHint')}</span>}
         </div>
         {error && <div className="alert bad" style={{ marginTop: 12 }} role="alert">{error}</div>}
@@ -56,7 +66,7 @@ export default function AssociationsPage() {
           <table>
             <thead><tr><th>{t('assocName')}</th><th>{t('colProvince')}</th><th>{t('colEtabs')}</th><th>{t('colBeneficiaries')}</th>{admin && <th />}</tr></thead>
             <tbody>
-              {list?.map((a) => (
+              {pg.rows?.map((a) => (
                 <tr key={a.id}>
                   <td><div className="person"><span className="chip c-brand" style={{ width: 36, height: 36 }}><Icon name="asso" /></span><b className="ar" style={{ color: 'var(--ink)', fontSize: 14 }}>{a.nomAr}</b></div></td>
                   <td>{pick(lang, { nomFr: a.provinceNomFr, nomAr: a.provinceNomAr })}</td>
@@ -72,7 +82,7 @@ export default function AssociationsPage() {
             </tbody>
           </table>
         </div>
-        <div className="pager"><span>{list?.length ?? 0} {t('results')}</span></div>
+        <Pager total={pg.total} page={pg.page} size={pg.size} onPage={pg.setPage} onSize={pg.setSize} />
       </div>
       {dlg?.kind === 'edit' && <EditDialog a={dlg.a} ref_={ref} onClose={() => setDlg(null)} onSaved={() => { setDlg(null); toast(t('assocSaved')); load(); }} />}
       {dlg?.kind === 'delete' && <DeleteDialog a={dlg.a} onClose={() => setDlg(null)} onDone={() => { setDlg(null); toast(t('assocDeleted')); load(); }} />}

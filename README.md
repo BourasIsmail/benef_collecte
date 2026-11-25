@@ -65,6 +65,9 @@ Clé = `tri(nom FR, prénom FR normalisés) | date de naissance`. La normalisati
 ### Statistiques
 Tableau de bord filtré par périmètre : totaux, filles/garçons, par province ou par établissement, tranches d'âge (0–5, 6–12, 13–17, 18–59, 60+), établissements par catégorie, dernières fiches.
 
+### Tableaux : filtres et pagination
+Tous les tableaux (bénéficiaires, associations, établissements, utilisateurs, journal d'audit) ont une pagination (10, 20, 50 ou 100 lignes par page, première / précédente / suivante / dernière) et des filtres avec un bouton « Réinitialiser les filtres » : recherche, province, catégorie, association, établissement, sexe, rôle, état, action, utilisateur et période selon l'écran. Bénéficiaires et journal sont paginés côté serveur ; les autres listes, bornées (~1 000 lignes), côté navigateur.
+
 ### Export
 `Exporter (CSV)` : UTF-8 avec BOM (ouvre l'arabe correctement dans Excel), limité au périmètre, journalisé, protégé contre l'injection de formules.
 

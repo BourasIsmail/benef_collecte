@@ -96,7 +96,7 @@ svg{flex:none}
 .field input[type=text]{padding-inline-start:38px}
 input[type=text],input[type=email],input[type=password],input[type=date],select{background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;min-width:0;width:100%}
 input:focus,select:focus{border-color:var(--brand);outline:0;background:var(--surface)}
-.filters select{flex:1 1 160px;width:auto}
+.filters select{flex:1 1 200px;width:auto;text-overflow:ellipsis}
 .tablewrap{overflow-x:auto;margin-top:14px}
 table{border-collapse:collapse;width:100%;min-width:660px}
 th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;text-align:start;padding:8px 12px}
@@ -197,3 +197,8 @@ a{color:inherit;text-decoration:none}
 .ss-opt small{color:var(--muted);font-weight:400;font-size:11.5px}
 .ss-empty{padding:8px 10px;color:var(--muted);font-size:12px}
 .ro-note{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12.5px}
+.pager-ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pager select{width:auto;padding:4px 10px;border-radius:10px}
+.pager .check-row{color:var(--muted);font-weight:500;font-size:12.5px}
+.linkbtn{background:none;border:0;color:var(--brand);font-weight:600;font-size:12.5px;padding:4px 6px;text-decoration:underline}
+.filters .date{flex:0 1 150px}

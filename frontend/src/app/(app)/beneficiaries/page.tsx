@@ -9,6 +9,7 @@ import { Modal } from '@/components/Modal';
 import { SearchSelect } from '@/components/SearchSelect';
 import { useToast } from '@/lib/toast';
 import { canWrite, fmtDate, initials, pick } from '@/lib/util';
+import { Pager } from '@/components/Pager';
 
 export default function BeneficiariesPage() {
   const { me } = useAuth();
@@ -22,7 +23,9 @@ export default function BeneficiariesPage() {
   const [asso, setAsso] = useState('');
   const [etab, setEtab] = useState('');
   const [sexe, setSexe] = useState('');
+  const [cat, setCat] = useState('');
   const [page, setPage] = useState(0);
+  const [size, setSize] = useState(20);
   const [data, setData] = useState<Page<Beneficiary> | null>(null);
   const [toArchive, setToArchive] = useState<Beneficiary | null>(null);
   const [error, setError] = useState('');
@@ -36,14 +39,15 @@ export default function BeneficiariesPage() {
     if (prov) p.set('provinceId', prov);
     if (asso) p.set('associationId', asso);
     if (etab) p.set('etablissementId', etab);
+    if (cat) p.set('categoryId', cat);
     if (sexe) p.set('sexe', sexe);
     return p;
-  }, [dq, prov, asso, etab, sexe]);
+  }, [dq, prov, asso, etab, cat, sexe]);
 
   const load = useCallback(() => {
-    const p = new URLSearchParams(params); p.set('page', String(page)); p.set('size', '15');
+    const p = new URLSearchParams(params); p.set('page', String(page)); p.set('size', String(size));
     api<Page<Beneficiary>>('/beneficiaries?' + p).then(setData).catch((e) => setError(err(e instanceof ApiError ? e.code : 'INTERNAL')));
-  }, [params, page, err]);
+  }, [params, page, size, err]);
   useEffect(load, [load]);
 
   const assocOptions = useMemo(() => {
@@ -62,7 +66,6 @@ export default function BeneficiariesPage() {
   if (!me) return null;
   const write = canWrite(me);
   const provs = ref?.provinces ?? [];
-  const pages = data ? Math.max(1, Math.ceil(data.total / data.size)) : 1;
 
   return (
     <>
@@ -89,9 +92,14 @@ export default function BeneficiariesPage() {
             <option value="">{t('colEtablissement')} : {t('all')}</option>
             {etabOptions.map((e) => <option key={e.id} value={e.id}>{e.nomAr}</option>)}
           </select>
+          <select value={cat} onChange={(e) => { setCat(e.target.value); setPage(0); }} aria-label={t('allCategories')}>
+            <option value="">{t('allCategories')}</option>
+            {(ref?.categories ?? []).map((c) => <option key={c.id} value={c.id}>{pick(lang, c)}</option>)}
+          </select>
           <select value={sexe} onChange={(e) => { setSexe(e.target.value); setPage(0); }} aria-label={t('allSexes')}>
             <option value="">{t('allSexes')}</option><option value="F">{t('F')}</option><option value="M">{t('M')}</option>
           </select>
+          {(q || prov || asso || etab || cat || sexe) && <button className="linkbtn" type="button" onClick={() => { setQ(''); setProv(''); setAsso(''); setEtab(''); setCat(''); setSexe(''); setPage(0); }}>{t('resetFilters')}</button>}
         </div>
         {error && <div className="alert bad" style={{ marginTop: 12 }} role="alert">{error}</div>}
         <div className="tablewrap">
@@ -115,14 +123,7 @@ export default function BeneficiariesPage() {
             </tbody>
           </table>
         </div>
-        <div className="pager">
-          <span>{data?.total ?? 0} {t('results')}</span>
-          <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button className="btn sm" type="button" disabled={page === 0} onClick={() => setPage(page - 1)}>{t('prev')}</button>
-            <b>{page + 1} / {pages}</b>
-            <button className="btn sm" type="button" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>{t('next')}</button>
-          </span>
-        </div>
+        <Pager total={data?.total ?? 0} page={page} size={size} onPage={setPage} onSize={(n) => { setSize(n); setPage(0); }} />
       </div>
       {toArchive && (
         <Modal title={t('archiveTitle')} onClose={() => setToArchive(null)}>

@@ -33,13 +33,15 @@ public class AssociationService {
     }
 
     @Transactional(readOnly = true)
-    public List<AssociationDto> list(AppUserPrincipal me, Long provinceId, String q) {
+    public List<AssociationDto> list(AppUserPrincipal me, Long provinceId, Long categoryId, String q) {
         var v = scope.of(me);
         Map<Long, Long> etabCounts = toMap(repo.countEtablissements(v.all(), v.ids()));
         Map<Long, Long> benefCounts = toMap(repo.countBeneficiaries(v.all(), v.ids()));
         String term = Text.normAr(q);
+        var withCategory = categoryId == null ? null : repo.idsWithCategory(categoryId);
         return repo.findScoped(v.all(), v.ids()).stream()
                 .filter(a -> provinceId == null || a.getProvince().getId().equals(provinceId))
+                .filter(a -> withCategory == null || withCategory.contains(a.getId()))
                 .filter(a -> term.isEmpty() || Text.normAr(a.getNomAr()).contains(term))
                 .map(a -> toDto(a, etabCounts.getOrDefault(a.getId(), 0L), benefCounts.getOrDefault(a.getId(), 0L))).toList();
     }

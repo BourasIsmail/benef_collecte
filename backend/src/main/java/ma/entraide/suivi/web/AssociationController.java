@@ -20,7 +20,8 @@ public class AssociationController {
 
         @GetMapping
         public List<AssociationDto> list(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) Long provinceId,
-                                         @RequestParam(required = false) String q) { return service.list(me, provinceId, q); }
+                                         @RequestParam(required = false) Long categoryId,
+                                         @RequestParam(required = false) String q) { return service.list(me, provinceId, categoryId, q); }
 
         @PostMapping
         public AssociationDto create(@AuthenticationPrincipal AppUserPrincipal me, @Valid @RequestBody AssociationRequest r) { return service.create(me, r); }

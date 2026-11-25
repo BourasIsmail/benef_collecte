@@ -24,11 +24,12 @@ public class BeneficiaryController {
 
     @GetMapping
     public PageDto<BeneficiaryDto> list(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) String q,
-                                        @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long associationId,
+                                        @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long categoryId,
+                                        @RequestParam(required = false) Long associationId,
                                         @RequestParam(required = false) Long provinceId, @RequestParam(required = false) String sexe,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "20") int size) {
-        return service.search(me, q, etablissementId, associationId, provinceId, sexe, page, size);
+        return service.search(me, q, etablissementId, categoryId, associationId, provinceId, sexe, page, size);
     }
 
     @GetMapping("/{id}")
@@ -55,9 +56,10 @@ public class BeneficiaryController {
     /** CSV export (UTF-8 with BOM so Excel opens Arabic correctly), restricted to the caller's perimeter. */
     @GetMapping("/export.csv")
     public void export(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) String q,
-                       @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long associationId,
+                       @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long categoryId,
+                       @RequestParam(required = false) Long associationId,
                        @RequestParam(required = false) Long provinceId, @RequestParam(required = false) String sexe, HttpServletResponse res) throws IOException {
-        var rows = service.exportAll(me, q, etablissementId, associationId, provinceId, sexe);
+        var rows = service.exportAll(me, q, etablissementId, categoryId, associationId, provinceId, sexe);
         audit.log(me.email(), "EXPORT_CSV", "Beneficiary", null, rows.size() + " lignes");
         res.setContentType("text/csv;charset=UTF-8");
         res.setHeader("Content-Disposition", "attachment; filename=\"beneficiaires.csv\"");
