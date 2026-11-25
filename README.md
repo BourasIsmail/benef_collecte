@@ -40,7 +40,7 @@ La liste exacte des comptes est visible dans l'écran *Utilisateurs* (admin).
 ### Données de référence (depuis les Excel)
 Chargées au premier démarrage (`backend/src/main/resources/seed/*.json`) :
 - **12 régions, 82 provinces** (fichier des bénéficiaires 2025-2026, + Aousserd) ;
-- **7 catégories, 1 003 associations et 1 052 établissements** (fichier `base_EPS_2026`) : chaque feuille Excel est une catégorie (le nom de la feuille sans « 2026 »), chaque ligne un établissement rattaché à une association ; la province de l'établissement est celle de son association. Les lignes de total sont ignorées. RIB, comptes bancaires, montants et noms des présidents ne sont **pas** repris.
+- **7 catégories, 1 011 associations et 1 061 établissements** : 1 052 établissements du fichier `base_EPS_2026` et 9 ajoutés à la main (hors feuilles, voir `etablissements.json`, licences 11/514, 13/787, 19/1155, 19/1158, 11/476, 17/1094, 14/956, 09/08, 21/1221) : chaque feuille Excel est une catégorie (le nom de la feuille sans « 2026 »), chaque ligne un établissement rattaché à une association ; la province de l'établissement est celle de son association. Les lignes de total sont ignorées. RIB, comptes bancaires, montants et noms des présidents ne sont **pas** repris.
 
 Les bénéficiaires ne sont **pas** importés : l'application démarre sans bénéficiaire.
 À relire : noms arabes des provinces et rattachements aux régions (proposés par nous). Aousserd est confirmée (82 provinces).

@@ -13,7 +13,7 @@ Remplacer le fichier Excel (≈112 000 lignes, saisie libre, doublons, CIN absen
 Comptes créés au premier démarrage (`<province>@entraide.ma`), mot de passe par défaut, changement obligatoire à la première connexion.
 
 ## 3. Données
-- **Référence (issue des Excel)** : 12 régions, 82 provinces ; 7 catégories, 1 003 associations, 1 052 établissements (feuille = catégorie). Aucun bénéficiaire importé.
+- **Référence (issue des Excel)** : 12 régions, 82 provinces ; 7 catégories, 1 011 associations, 1 061 établissements (feuille = catégorie ; 9 établissements ajoutés à la main). Aucun bénéficiaire importé.
 - **Association** : province + nom (AR). Le même nom dans une autre province est une autre association. Elle peut avoir plusieurs établissements.
 - **Établissement** : association (donc province), **catégorie (cible, choix unique)**, nom (AR), type et numéro de licence (facultatifs), actif/archivé. Catégories (noms des feuilles Excel) : النساء في وضعية صعبة ; المسنين ; المركبات ; الأشخاص في وضعية صعبة ; الأشخاص في وضعية إعاقة ; دور الطالب و الطالبة ; الأطفال في وضعية صعبة.
 - **Bénéficiaire** : **établissement** (choisi après l'association), nom/prénom (AR) et (FR) obligatoires, date de naissance, sexe, CIN facultatif. Pas de champ « année de saisie/mise à jour » : `created_at` / `updated_at` suffisent.

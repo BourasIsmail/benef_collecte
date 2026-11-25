@@ -26,7 +26,7 @@ public final class Dtos {
                                  long etablissementCount, long beneficiaryCount) {}
 
     public record EtablissementRequest(@NotNull Long associationId, @NotNull Long categoryId,
-                                       @NotBlank @Size(max = 255) String nomAr, @Size(max = 120) String typeEtablissement,
+                                       @NotBlank @Size(max = 255) String nomAr, @Size(max = 255) String typeEtablissement,
                                        @Size(max = 40) String numeroLicence) {}
     public record EtablissementDto(Long id, Long associationId, String associationNom, Long provinceId, String provinceNomFr,
                                    String provinceNomAr, Long categoryId, String nomAr, String typeEtablissement,

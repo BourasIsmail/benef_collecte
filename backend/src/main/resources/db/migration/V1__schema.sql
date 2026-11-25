@@ -39,7 +39,7 @@ CREATE TABLE etablissements (
   association_id BIGINT NOT NULL,
   category_id BIGINT NOT NULL,
   nom_ar VARCHAR(255) NOT NULL,
-  type_etablissement VARCHAR(120) NULL,
+  type_etablissement VARCHAR(255) NULL,
   numero_licence VARCHAR(40) NULL,
   actif BOOLEAN NOT NULL DEFAULT TRUE,
   created_at DATETIME(3) NOT NULL,

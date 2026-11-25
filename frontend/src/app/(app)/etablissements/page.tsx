@@ -144,7 +144,7 @@ function EditDialog({ e, ref_, assocOptions, onClose, onSaved }: { e: Etablissem
             <label key={c.id} className="cb radio"><input type="radio" name="cat" checked={catId === c.id} onChange={() => setCatId(c.id)} /><span>{pick(lang, c)}</span></label>
           ))}
         </fieldset>
-        <label>{t('etabType')}<input id="etabType" type="text" dir="rtl" maxLength={120} value={type} onChange={(ev) => setType(ev.target.value)} /></label>
+        <label>{t('etabType')}<input id="etabType" type="text" dir="rtl" maxLength={255} value={type} onChange={(ev) => setType(ev.target.value)} /></label>
         <label>{t('etabLicense')}<input id="etabLicense" type="text" dir="ltr" maxLength={40} value={lic} onChange={(ev) => setLic(ev.target.value)} /></label>
         {error && <div className="alert bad" role="alert">{error}</div>}
         <div className="actions" style={{ marginTop: 0 }}>
