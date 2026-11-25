@@ -32,22 +32,22 @@ public class StatsService {
     @Transactional(readOnly = true)
     public Stats compute(AppUserPrincipal me) {
         var v = scope.of(me);
-        String base = " from beneficiaires b join etablissements e on e.id = b.etablissement_id join provinces p on p.id = e.province_id "
+        String base = " from beneficiaires b join etablissements e on e.id = b.etablissement_id join associations a on a.id = e.association_id join provinces p on p.id = a.province_id "
                 + "where b.statut = 'ACTIF' and " + SCOPE;
 
         Object[] totals = rows("select count(*), coalesce(sum(b.sexe = 'F'), 0)" + base, v).get(0);
         long total = num(totals[0]), girls = num(totals[1]);
 
-        long etabCount = num(rows("select count(*) from etablissements e join provinces p on p.id = e.province_id where e.actif = true and " + SCOPE, v).get(0));
-        long assoCount = num(rows("select count(distinct e.association_id) from etablissements e join provinces p on p.id = e.province_id where e.actif = true and " + SCOPE, v).get(0));
+        long etabCount = num(rows("select count(*) from etablissements e join associations a on a.id = e.association_id join provinces p on p.id = a.province_id where e.actif = true and " + SCOPE, v).get(0));
+        long assoCount = num(rows("select count(*) from associations a join provinces p on p.id = a.province_id where " + SCOPE, v).get(0));
         long provCount = num(rows("select count(*) from provinces p where " + SCOPE, v).get(0));
 
-        List<Count> byProvince = rows("select p.nom_fr, p.nom_ar, count(b.id) from provinces p left join etablissements e on e.province_id = p.id "
+        List<Count> byProvince = rows("select p.nom_fr, p.nom_ar, count(b.id) from provinces p left join associations a on a.province_id = p.id left join etablissements e on e.association_id = a.id "
                 + "left join beneficiaires b on b.etablissement_id = e.id and b.statut = 'ACTIF' where " + SCOPE
                 + " group by p.id, p.nom_fr, p.nom_ar order by count(b.id) desc, p.nom_fr", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 
-        List<Count> byEtab = rows("select e.nom_ar, e.nom_ar, count(b.id) from etablissements e join provinces p on p.id = e.province_id "
+        List<Count> byEtab = rows("select e.nom_ar, e.nom_ar, count(b.id) from etablissements e join associations a on a.id = e.association_id join provinces p on p.id = a.province_id "
                 + "left join beneficiaires b on b.etablissement_id = e.id and b.statut = 'ACTIF' where e.actif = true and " + SCOPE
                 + " group by e.id, e.nom_ar order by count(b.id) desc, e.nom_ar limit 15", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
@@ -60,7 +60,7 @@ public class StatsService {
         for (int i = 0; i < ageLabels.length; i++) ageBands.add(new Count(ageLabels[i], ageLabels[i], num(age[i])));
 
         List<Count> byCat = rows("select c.nom_fr, c.nom_ar, count(x.id) from categories c "
-                + "left join (select e.id, e.category_id from etablissements e join provinces p on p.id = e.province_id where e.actif = true and " + SCOPE + ") x on x.category_id = c.id "
+                + "left join (select e.id, e.category_id from etablissements e join associations a on a.id = e.association_id join provinces p on p.id = a.province_id where e.actif = true and " + SCOPE + ") x on x.category_id = c.id "
                 + "where c.actif = true group by c.id, c.nom_fr, c.nom_ar order by count(x.id) desc, c.id", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 

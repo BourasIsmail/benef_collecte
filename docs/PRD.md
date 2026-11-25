@@ -13,9 +13,9 @@ Remplacer le fichier Excel (≈112 000 lignes, saisie libre, doublons, CIN absen
 Comptes créés au premier démarrage (`<province>@entraide.ma`), mot de passe par défaut, changement obligatoire à la première connexion.
 
 ## 3. Données
-- **Référence (issue des Excel)** : 12 régions, 82 provinces ; 7 catégories, 966 associations, 1 052 établissements (feuille = catégorie). Aucun bénéficiaire importé.
-- **Association** : nom (AR), entité nationale. Elle peut avoir plusieurs établissements.
-- **Établissement** : association, province, **catégorie (cible, choix unique)**, nom (AR), type et numéro de licence (facultatifs), actif/archivé. Catégories : personnes âgées ; enfants en situation difficile ; scolarisation (Dar Taliba / Dar Talib) ; personnes en situation de handicap ; personnes en situation difficile ; femmes en situation difficile ; complexes.
+- **Référence (issue des Excel)** : 12 régions, 82 provinces ; 7 catégories, 1 003 associations, 1 052 établissements (feuille = catégorie). Aucun bénéficiaire importé.
+- **Association** : province + nom (AR). Le même nom dans une autre province est une autre association. Elle peut avoir plusieurs établissements.
+- **Établissement** : association (donc province), **catégorie (cible, choix unique)**, nom (AR), type et numéro de licence (facultatifs), actif/archivé. Catégories (noms des feuilles Excel) : النساء في وضعية صعبة ; المسنين ; المركبات ; الأشخاص في وضعية صعبة ; الأشخاص في وضعية إعاقة ; دور الطالب و الطالبة ; الأطفال في وضعية صعبة.
 - **Bénéficiaire** : **établissement** (choisi après l'association), nom/prénom (AR) et (FR) obligatoires, date de naissance, sexe, CIN facultatif. Pas de champ « année de saisie/mise à jour » : `created_at` / `updated_at` suffisent.
 
 ## 4. Règles de gestion
@@ -37,7 +37,6 @@ Connexion · Changement de mot de passe obligatoire · Tableau de bord · Liste 
 Fusion de doublons, import de l'historique, création de comptes depuis l'interface, édition de la liste des catégories depuis l'interface, pièces jointes, notifications.
 
 ## 7. Points à confirmer
-- Province **Aousserd** ajoutée (82 provinces).
 - Noms arabes des provinces et rattachements régionaux.
 - Libellé exact et nature de la catégorie « المركبات ».
 - Politique de rétention des sauvegardes et du journal d'audit.

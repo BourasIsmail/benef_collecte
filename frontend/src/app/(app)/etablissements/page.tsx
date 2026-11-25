@@ -39,7 +39,7 @@ export default function EtablissementsPage() {
   }, [q, prov, cat, asso, archived, err]);
   useEffect(() => { const h = setTimeout(load, 200); return () => clearTimeout(h); }, [load]);
 
-  const assocOptions = useMemo(() => [{ value: '', label: t('allAssociations') }, ...assos.map((a) => ({ value: String(a.id), label: a.nomAr }))], [assos, t]);
+  const assocOptions = useMemo(() => [{ value: '', label: t('allAssociations') }, ...assos.map((a) => ({ value: String(a.id), label: a.nomAr, hint: pick(lang, { nomFr: a.provinceNomFr, nomAr: a.provinceNomAr }) }))], [assos, t, lang]);
 
   async function setActive(e: Etablissement, active: boolean) {
     try { await api(`/etablissements/${e.id}/${active ? 'unarchive' : 'archive'}`, { method: 'POST' }); toast(active ? t('etabUnarchived') : t('etabArchived')); load(); }
@@ -109,7 +109,6 @@ export default function EtablissementsPage() {
 function EditDialog({ e, ref_, assocOptions, onClose, onSaved }: { e: Etablissement | null; ref_: RefData; assocOptions: { value: string; label: string }[]; onClose: () => void; onSaved: () => void }) {
   const { t, lang, err } = useI18n();
   const [assoc, setAssoc] = useState(e ? String(e.associationId) : '');
-  const [provinceId, setProvinceId] = useState(String(e?.provinceId ?? ref_.provinces[0]?.id ?? ''));
   const [catId, setCatId] = useState<number | null>(e?.categoryId ?? null);
   const [nom, setNom] = useState(e?.nomAr ?? '');
   const [type, setType] = useState(e?.typeEtablissement ?? '');
@@ -122,7 +121,7 @@ function EditDialog({ e, ref_, assocOptions, onClose, onSaved }: { e: Etablissem
     if (!assoc) { setError(err('ASSOCIATION_NOT_FOUND')); return; }
     if (catId === null) { setError(err('INVALID_CATEGORIES')); return; }
     setBusy(true); setError('');
-    const body = { associationId: Number(assoc), provinceId: Number(provinceId), categoryId: catId, nomAr: nom, typeEtablissement: type || null, numeroLicence: lic || null };
+    const body = { associationId: Number(assoc), categoryId: catId, nomAr: nom, typeEtablissement: type || null, numeroLicence: lic || null };
     try {
       if (e) await api('/etablissements/' + e.id, { method: 'PUT', body }); else await api('/etablissements', { method: 'POST', body });
       onSaved();
@@ -135,11 +134,6 @@ function EditDialog({ e, ref_, assocOptions, onClose, onSaved }: { e: Etablissem
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <label><span>{t('fAssociation')}<span className="req" aria-hidden="true">*</span></span><SearchSelect id="etabAssociation" options={assocOptions} value={assoc} onChange={setAssoc} placeholder={t('chooseAssociation')} /></label>
         <label><span>{t('etabName')}<span className="req" aria-hidden="true">*</span></span><input id="etabName" type="text" dir="rtl" required maxLength={255} value={nom} onChange={(ev) => setNom(ev.target.value)} /></label>
-        <label><span>{t('colProvince')}<span className="req" aria-hidden="true">*</span></span>
-          <select id="etabProvince" value={provinceId} onChange={(ev) => setProvinceId(ev.target.value)}>
-            {ref_.provinces.map((p) => <option key={p.id} value={p.id}>{pick(lang, p)}</option>)}
-          </select>
-        </label>
         <fieldset className="catset">
           <legend>{t('assocCategories')}<span className="req" aria-hidden="true">*</span> <small>({t('assocCategoriesHint')})</small></legend>
           {ref_.categories.map((c) => (

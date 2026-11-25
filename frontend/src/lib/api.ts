@@ -35,7 +35,7 @@ export interface Region { id: number; code: string; nomFr: string; nomAr: string
 export interface Province { id: number; code: string; regionId: number; nomFr: string; nomAr: string }
 export interface Category { id: number; code: string; nomFr: string; nomAr: string }
 export interface RefData { regions: Region[]; provinces: Province[]; categories: Category[] }
-export interface Association { id: number; nomAr: string; etablissementCount: number; beneficiaryCount: number }
+export interface Association { id: number; provinceId: number; provinceNomFr: string; provinceNomAr: string; nomAr: string; etablissementCount: number; beneficiaryCount: number }
 export interface Etablissement {
   id: number; associationId: number; associationNom: string; provinceId: number; provinceNomFr: string; provinceNomAr: string;
   categoryId: number; nomAr: string; typeEtablissement?: string; numeroLicence?: string; actif: boolean; beneficiaryCount: number;

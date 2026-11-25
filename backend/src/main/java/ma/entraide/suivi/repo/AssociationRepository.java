@@ -9,19 +9,18 @@ import java.util.Collection;
 import java.util.List;
 
 public interface AssociationRepository extends JpaRepository<Association, Long> {
-    boolean existsByNomAr(String nomAr);
-    boolean existsByNomArAndIdNot(String nomAr, Long id);
+    boolean existsByProvinceIdAndNomAr(Long provinceId, String nomAr);
+    boolean existsByProvinceIdAndNomArAndIdNot(Long provinceId, String nomAr, Long id);
 
-    /** Associations having at least one établissement in the caller's perimeter. */
-    @Query("select distinct a from Etablissement e join e.association a where (:all = true or e.province.id in :ids) order by a.nomAr")
+    @Query("select a from Association a join fetch a.province p where (:all = true or p.id in :ids) order by p.nomFr, a.nomAr")
     List<Association> findScoped(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
 
-    @Query("select a from Association a order by a.nomAr")
-    List<Association> findAllSorted();
+    @Query("select a from Association a join fetch a.province where a.id = :id")
+    java.util.Optional<Association> findWithProvince(@Param("id") Long id);
 
-    @Query("select e.association.id, count(e) from Etablissement e where e.actif = true and (:all = true or e.province.id in :ids) group by e.association.id")
+    @Query("select e.association.id, count(e) from Etablissement e where e.actif = true and (:all = true or e.association.province.id in :ids) group by e.association.id")
     List<Object[]> countEtablissements(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
 
-    @Query("select e.association.id, count(b) from Beneficiary b join b.etablissement e where b.statut = 'ACTIF' and (:all = true or e.province.id in :ids) group by e.association.id")
+    @Query("select e.association.id, count(b) from Beneficiary b join b.etablissement e where b.statut = 'ACTIF' and (:all = true or e.association.province.id in :ids) group by e.association.id")
     List<Object[]> countBeneficiaries(@Param("all") boolean all, @Param("ids") Collection<Long> ids);
 }

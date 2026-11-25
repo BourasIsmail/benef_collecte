@@ -21,10 +21,11 @@ public final class Dtos {
     public record RefData(List<RegionDto> regions, List<ProvinceDto> provinces, List<CategoryDto> categories) {}
 
     // ---- associations & établissements (read: everybody in scope; write: ADMIN only)
-    public record AssociationRequest(@NotBlank @Size(max = 255) String nomAr) {}
-    public record AssociationDto(Long id, String nomAr, long etablissementCount, long beneficiaryCount) {}
+    public record AssociationRequest(@NotNull Long provinceId, @NotBlank @Size(max = 255) String nomAr) {}
+    public record AssociationDto(Long id, Long provinceId, String provinceNomFr, String provinceNomAr, String nomAr,
+                                 long etablissementCount, long beneficiaryCount) {}
 
-    public record EtablissementRequest(@NotNull Long associationId, @NotNull Long provinceId, @NotNull Long categoryId,
+    public record EtablissementRequest(@NotNull Long associationId, @NotNull Long categoryId,
                                        @NotBlank @Size(max = 255) String nomAr, @Size(max = 120) String typeEtablissement,
                                        @Size(max = 40) String numeroLicence) {}
     public record EtablissementDto(Long id, Long associationId, String associationNom, Long provinceId, String provinceNomFr,

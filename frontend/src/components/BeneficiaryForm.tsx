@@ -39,12 +39,11 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
 
   // association filter first, then the établissement of that association
   const assocOptions = useMemo(() => {
-    const m = new Map<number, { name: string; n: number }>();
-    for (const e of etabs) { const cur = m.get(e.associationId); m.set(e.associationId, { name: e.associationNom, n: (cur?.n ?? 0) + 1 }); }
-    return [...m.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'ar')).map(([id, v]) => ({ value: String(id), label: v.name, hint: `${v.n}` }));
-  }, [etabs]);
+    const m = new Map<number, { name: string; prov: string }>();
+    for (const e of etabs) m.set(e.associationId, { name: e.associationNom, prov: pick(lang, { nomFr: e.provinceNomFr, nomAr: e.provinceNomAr }) });
+    return [...m.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'ar')).map(([id, v]) => ({ value: String(id), label: v.name, hint: v.prov }));
+  }, [etabs, lang]);
   const etabOfAssoc = useMemo(() => etabs.filter((e) => String(e.associationId) === f.associationId), [etabs, f.associationId]);
-  const multiProvince = useMemo(() => new Set(etabOfAssoc.map((e) => e.provinceId)).size > 1, [etabOfAssoc]);
   const selectedEtab = etabs.find((e) => String(e.id) === f.etablissementId);
 
   function chooseAssociation(id: string) {
@@ -108,7 +107,7 @@ export function BeneficiaryForm({ existing }: { existing?: Beneficiary }) {
           <label className="full"><span>{t('fEtablissement')}<Req /></span>
             <select id="etablissement" required value={f.etablissementId} onChange={set('etablissementId')} disabled={!f.associationId}>
               <option value="">{f.associationId ? t('chooseEtablissement') : t('pickAssocFirst')}</option>
-              {etabOfAssoc.map((e) => <option key={e.id} value={e.id}>{e.nomAr}{multiProvince ? ` — ${pick(lang, { nomFr: e.provinceNomFr, nomAr: e.provinceNomAr })}` : ''}</option>)}
+              {etabOfAssoc.map((e) => <option key={e.id} value={e.id}>{e.nomAr}</option>)}
             </select>
             {f.associationId && etabOfAssoc.length === 0 && <span className="fielderr">{t('noEtab')}</span>}
             {catName && <span className="cats" style={{ marginTop: 4 }}><span className="pill cat">{catName}</span></span>}

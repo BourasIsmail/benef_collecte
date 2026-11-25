@@ -28,7 +28,7 @@ public class ReferenceDataSeeder implements ApplicationRunner {
 
     record RegionSeed(String code, String nomFr, String nomAr) {}
     record ProvinceSeed(String code, String nomFr, String nomAr, String region) {}
-    record AssociationSeed(String nomAr) {}
+    record AssociationSeed(String province, String nomAr) {}
     record EtablissementSeed(String association, String province, String categorie, String nomAr, String type, String licence) {}
 
     private final RegionRepository regions;
@@ -66,22 +66,21 @@ public class ReferenceDataSeeder implements ApplicationRunner {
                 Category e = new Category(); e.setCode(c.code()); e.setNomFr(c.nomFr()); e.setNomAr(c.nomAr());
                 categoryByCode.put(c.code(), categories.save(e));
             }
-            Map<String, Association> assoByName = new HashMap<>();
+            Map<String, Association> assoByKey = new HashMap<>();   // key = province code | name
             for (AssociationSeed a : read("seed/associations.json", new TypeReference<List<AssociationSeed>>() {})) {
-                Association e = new Association(); e.setNomAr(a.nomAr());
-                assoByName.put(a.nomAr(), associations.save(e));
+                Association e = new Association(); e.setProvince(provinceByCode.get(a.province())); e.setNomAr(a.nomAr());
+                assoByKey.put(a.province() + "|" + a.nomAr(), associations.save(e));
             }
             int n = 0;
             for (EtablissementSeed x : read("seed/etablissements.json", new TypeReference<List<EtablissementSeed>>() {})) {
                 Etablissement e = new Etablissement();
-                e.setAssociation(assoByName.get(x.association()));
-                e.setProvince(provinceByCode.get(x.province()));
+                e.setAssociation(assoByKey.get(x.province() + "|" + x.association()));
                 e.setCategory(categoryByCode.get(x.categorie()));
                 e.setNomAr(x.nomAr()); e.setTypeEtablissement(x.type()); e.setNumeroLicence(x.licence());
                 etablissements.save(e); n++;
             }
             log.info("Données de référence chargées : {} régions, {} provinces, {} catégories, {} associations, {} établissements",
-                    regionByCode.size(), provinceByCode.size(), categoryByCode.size(), assoByName.size(), n);
+                    regionByCode.size(), provinceByCode.size(), categoryByCode.size(), assoByKey.size(), n);
         });
     }
 

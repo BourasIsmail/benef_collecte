@@ -47,10 +47,10 @@ export default function BeneficiariesPage() {
   useEffect(load, [load]);
 
   const assocOptions = useMemo(() => {
-    const m = new Map<number, string>();
-    for (const e of etabs) if (!prov || String(e.provinceId) === prov) m.set(e.associationId, e.associationNom);
-    return [{ value: '', label: t('allAssociations') }, ...[...m.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ar')).map(([id, name]) => ({ value: String(id), label: name }))];
-  }, [etabs, prov, t]);
+    const m = new Map<number, { name: string; prov: string }>();
+    for (const e of etabs) if (!prov || String(e.provinceId) === prov) m.set(e.associationId, { name: e.associationNom, prov: pick(lang, { nomFr: e.provinceNomFr, nomAr: e.provinceNomAr }) });
+    return [{ value: '', label: t('allAssociations') }, ...[...m.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'ar')).map(([id, v]) => ({ value: String(id), label: v.name, hint: v.prov }))];
+  }, [etabs, prov, t, lang]);
   const etabOptions = useMemo(() => etabs.filter((e) => (!prov || String(e.provinceId) === prov) && (!asso || String(e.associationId) === asso)), [etabs, prov, asso]);
 
   async function doArchive() {

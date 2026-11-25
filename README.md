@@ -40,10 +40,10 @@ La liste exacte des comptes est visible dans l'écran *Utilisateurs* (admin).
 ### Données de référence (depuis les Excel)
 Chargées au premier démarrage (`backend/src/main/resources/seed/*.json`) :
 - **12 régions, 82 provinces** (fichier des bénéficiaires 2025-2026, + Aousserd) ;
-- **7 catégories, 966 associations et 1 052 établissements** (fichier `base_EPS_2026`) : chaque feuille Excel est une catégorie (le nom de la feuille sans « 2026 »), chaque ligne un établissement rattaché à une association et à une province. Les lignes de total sont ignorées. RIB, comptes bancaires, montants et noms des présidents ne sont **pas** repris.
+- **7 catégories, 1 003 associations et 1 052 établissements** (fichier `base_EPS_2026`) : chaque feuille Excel est une catégorie (le nom de la feuille sans « 2026 »), chaque ligne un établissement rattaché à une association ; la province de l'établissement est celle de son association. Les lignes de total sont ignorées. RIB, comptes bancaires, montants et noms des présidents ne sont **pas** repris.
 
 Les bénéficiaires ne sont **pas** importés : l'application démarre sans bénéficiaire.
-À relire : noms arabes des provinces et rattachements aux régions (proposés par nous) ; Aousserd.
+À relire : noms arabes des provinces et rattachements aux régions (proposés par nous). Aousserd est confirmée (82 provinces).
 
 > **Mise à jour depuis une version précédente** : le schéma a changé (établissements). Pour repartir d'une base propre : `docker compose down -v` (⚠ efface la base) puis `docker compose up -d --build`.
 
@@ -57,8 +57,8 @@ Clé = `tri(nom FR, prénom FR normalisés) | date de naissance`. La normalisati
 - Le CIN est facultatif, mais unique et au format `AB123456` quand il est saisi.
 
 ### Associations, établissements et catégories
-- Une **association** est une entité nationale (son nom est unique) qui peut avoir **plusieurs établissements**.
-- Un **établissement** appartient à une association, se situe dans **une province** et porte **la catégorie (la cible)**, à choix unique : personnes âgées, enfants en situation difficile, scolarisation (Dar Taliba / Dar Talib), personnes en situation de handicap, personnes en situation difficile, femmes en situation difficile, complexes. Il a aussi un type et un numéro de licence (facultatifs).
+- Une **association** appartient à **une province** ; le même nom dans une autre province est **une autre association** (unicité = province + nom). Elle peut avoir **plusieurs établissements**.
+- Un **établissement** appartient à une association (donc à sa province) et porte **la catégorie (la cible)**, à choix unique, parmi les 7 feuilles de l'Excel : femmes en situation difficile, personnes âgées, complexes, personnes en situation difficile, personnes en situation de handicap, « دور الطالب و الطالبة » (scolarisation), enfants en situation difficile. Il a aussi un type et un numéro de licence (facultatifs).
 - Un **bénéficiaire** appartient à **un établissement** : à la saisie on choisit d'abord l'association (liste filtrable), puis l'établissement de cette association.
 - Seul l'administrateur modifie associations et établissements. Une association qui a des établissements, ou un établissement qui a des bénéficiaires, ne peut pas être supprimé : l'établissement s'archive et se réactive.
 

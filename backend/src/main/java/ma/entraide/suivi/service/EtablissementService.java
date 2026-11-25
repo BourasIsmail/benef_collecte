@@ -3,7 +3,6 @@ package ma.entraide.suivi.service;
 import ma.entraide.suivi.domain.Association;
 import ma.entraide.suivi.domain.Category;
 import ma.entraide.suivi.domain.Etablissement;
-import ma.entraide.suivi.domain.Province;
 import ma.entraide.suivi.repo.*;
 import ma.entraide.suivi.security.AppUserPrincipal;
 import ma.entraide.suivi.util.Text;
@@ -23,15 +22,14 @@ import java.util.Map;
 public class EtablissementService {
     private final EtablissementRepository repo;
     private final AssociationRepository associations;
-    private final ProvinceRepository provinces;
     private final CategoryRepository categories;
     private final BeneficiaryRepository beneficiaries;
     private final Scope scope;
     private final AuditService audit;
 
-    public EtablissementService(EtablissementRepository repo, AssociationRepository associations, ProvinceRepository provinces,
+    public EtablissementService(EtablissementRepository repo, AssociationRepository associations,
                                 CategoryRepository categories, BeneficiaryRepository beneficiaries, Scope scope, AuditService audit) {
-        this.repo = repo; this.associations = associations; this.provinces = provinces; this.categories = categories;
+        this.repo = repo; this.associations = associations; this.categories = categories;
         this.beneficiaries = beneficiaries; this.scope = scope; this.audit = audit;
     }
 
@@ -53,13 +51,12 @@ public class EtablissementService {
     @Transactional
     public EtablissementDto create(AppUserPrincipal me, EtablissementRequest r) {
         AssociationService.requireAdmin(me);
-        Association a = associations.findById(r.associationId()).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "ASSOCIATION_NOT_FOUND"));
-        Province p = provinces.findById(r.provinceId()).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "PROVINCE_NOT_FOUND"));
+        Association a = associations.findWithProvince(r.associationId()).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "ASSOCIATION_NOT_FOUND"));
         Category c = category(r.categoryId());
         String nom = Text.clean(r.nomAr());
-        if (repo.existsByAssociationIdAndProvinceIdAndNomAr(a.getId(), p.getId(), nom)) throw new ApiException(HttpStatus.CONFLICT, "ETABLISSEMENT_EXISTS");
+        if (repo.existsByAssociationIdAndNomAr(a.getId(), nom)) throw new ApiException(HttpStatus.CONFLICT, "ETABLISSEMENT_EXISTS");
         Etablissement e = new Etablissement();
-        fill(e, a, p, c, nom, r);
+        fill(e, a, c, nom, r);
         repo.save(e);
         audit.log(me.email(), "ETABLISSEMENT_CREATED", "Etablissement", e.getId(), nom);
         return toDto(e, 0);
@@ -69,12 +66,11 @@ public class EtablissementService {
     public EtablissementDto update(AppUserPrincipal me, Long id, EtablissementRequest r) {
         AssociationService.requireAdmin(me);
         Etablissement e = find(id);
-        Association a = associations.findById(r.associationId()).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "ASSOCIATION_NOT_FOUND"));
-        Province p = provinces.findById(r.provinceId()).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "PROVINCE_NOT_FOUND"));
+        Association a = associations.findWithProvince(r.associationId()).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "ASSOCIATION_NOT_FOUND"));
         Category c = category(r.categoryId());
         String nom = Text.clean(r.nomAr());
-        if (repo.existsByAssociationIdAndProvinceIdAndNomArAndIdNot(a.getId(), p.getId(), nom, id)) throw new ApiException(HttpStatus.CONFLICT, "ETABLISSEMENT_EXISTS");
-        fill(e, a, p, c, nom, r);
+        if (repo.existsByAssociationIdAndNomArAndIdNot(a.getId(), nom, id)) throw new ApiException(HttpStatus.CONFLICT, "ETABLISSEMENT_EXISTS");
+        fill(e, a, c, nom, r);
         audit.log(me.email(), "ETABLISSEMENT_UPDATED", "Etablissement", id, nom);
         return toDto(e, beneficiaries.countByEtablissementId(id));
     }
@@ -105,9 +101,8 @@ public class EtablissementService {
         return categories.findById(id).filter(Category::isActif).orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "INVALID_CATEGORIES"));
     }
 
-    private static void fill(Etablissement e, Association a, Province p, Category c, String nom, EtablissementRequest r) {
+    private static void fill(Etablissement e, Association a, Category c, String nom, EtablissementRequest r) {
         e.setAssociation(a);
-        e.setProvince(p);
         e.setCategory(c);
         e.setNomAr(nom);
         e.setTypeEtablissement(blank(r.typeEtablissement()));

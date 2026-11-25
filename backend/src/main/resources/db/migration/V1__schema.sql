@@ -22,20 +22,21 @@ CREATE TABLE categories (
   actif BOOLEAN NOT NULL DEFAULT TRUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Une association est une entité nationale (le même nom peut avoir des établissements dans plusieurs provinces).
+-- Une association appartient à une province. Le même nom dans une autre province est une autre association.
 CREATE TABLE associations (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  province_id BIGINT NOT NULL,
   nom_ar VARCHAR(255) NOT NULL,
   created_at DATETIME(3) NOT NULL,
   updated_at DATETIME(3) NOT NULL,
-  CONSTRAINT uq_asso_nom UNIQUE (nom_ar)
+  CONSTRAINT fk_asso_province FOREIGN KEY (province_id) REFERENCES provinces(id),
+  CONSTRAINT uq_asso_province_nom UNIQUE (province_id, nom_ar)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Un établissement appartient à une association, se situe dans une province et a une catégorie (la cible).
+-- Un établissement appartient à une association (donc à sa province) et a une catégorie (la cible).
 CREATE TABLE etablissements (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   association_id BIGINT NOT NULL,
-  province_id BIGINT NOT NULL,
   category_id BIGINT NOT NULL,
   nom_ar VARCHAR(255) NOT NULL,
   type_etablissement VARCHAR(120) NULL,
@@ -44,11 +45,10 @@ CREATE TABLE etablissements (
   created_at DATETIME(3) NOT NULL,
   updated_at DATETIME(3) NOT NULL,
   CONSTRAINT fk_etab_asso FOREIGN KEY (association_id) REFERENCES associations(id),
-  CONSTRAINT fk_etab_province FOREIGN KEY (province_id) REFERENCES provinces(id),
   CONSTRAINT fk_etab_category FOREIGN KEY (category_id) REFERENCES categories(id),
-  CONSTRAINT uq_etab UNIQUE (association_id, province_id, nom_ar)
+  CONSTRAINT uq_etab UNIQUE (association_id, nom_ar)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-CREATE INDEX idx_etab_province ON etablissements (province_id, actif);
+CREATE INDEX idx_etab_asso ON etablissements (association_id, actif);
 CREATE INDEX idx_etab_category ON etablissements (category_id);
 
 CREATE TABLE beneficiaires (

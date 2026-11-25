@@ -1,32 +1,37 @@
 'use client';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { api, ApiError, Association } from '@/lib/api';
+import { api, ApiError, Association, RefData } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
 import { Icon } from '@/lib/icons';
 import { Modal } from '@/components/Modal';
 import { useToast } from '@/lib/toast';
+import { pick } from '@/lib/util';
 
 type Dlg = { kind: 'edit'; a: Association | null } | { kind: 'delete'; a: Association } | null;
 
 /** Everybody reads the associations of their perimeter; only the ADMIN can add, change or delete them. */
 export default function AssociationsPage() {
   const { me } = useAuth();
-  const { t, err } = useI18n();
+  const { t, lang, err } = useI18n();
   const toast = useToast();
+  const [ref, setRef] = useState<RefData | null>(null);
   const [list, setList] = useState<Association[] | null>(null);
   const [q, setQ] = useState('');
+  const [prov, setProv] = useState('');
   const [dlg, setDlg] = useState<Dlg>(null);
   const [error, setError] = useState('');
 
   const load = useCallback(() => {
     const p = new URLSearchParams();
     if (q.trim()) p.set('q', q.trim());
+    if (prov) p.set('provinceId', prov);
     api<Association[]>('/associations?' + p).then(setList).catch((e) => setError(err(e instanceof ApiError ? e.code : 'INTERNAL')));
-  }, [q, err]);
+  }, [q, prov, err]);
+  useEffect(() => { api<RefData>('/ref').then(setRef); }, []);
   useEffect(() => { const h = setTimeout(load, 200); return () => clearTimeout(h); }, [load]);
 
-  if (!me) return null;
+  if (!me || !ref) return <div className="center"><div className="spinner" /></div>;
   const admin = me.role === 'ADMIN';
 
   return (
@@ -38,16 +43,23 @@ export default function AssociationsPage() {
       <div className="card">
         <div className="filters">
           <div className="field"><Icon name="search" /><input type="text" placeholder={t('assocName')} value={q} onChange={(e) => setQ(e.target.value)} aria-label={t('assocName')} dir="auto" /></div>
+          {ref.provinces.length > 1 && (
+            <select value={prov} onChange={(e) => setProv(e.target.value)} aria-label={t('allProvinces')}>
+              <option value="">{t('allProvinces')}</option>
+              {ref.provinces.map((p) => <option key={p.id} value={p.id}>{pick(lang, p)}</option>)}
+            </select>
+          )}
           {!admin && <span className="ro-note"><Icon name="eye" size={16} />{t('readOnlyHint')}</span>}
         </div>
         {error && <div className="alert bad" style={{ marginTop: 12 }} role="alert">{error}</div>}
         <div className="tablewrap">
           <table>
-            <thead><tr><th>{t('assocName')}</th><th>{t('colEtabs')}</th><th>{t('colBeneficiaries')}</th>{admin && <th />}</tr></thead>
+            <thead><tr><th>{t('assocName')}</th><th>{t('colProvince')}</th><th>{t('colEtabs')}</th><th>{t('colBeneficiaries')}</th>{admin && <th />}</tr></thead>
             <tbody>
               {list?.map((a) => (
                 <tr key={a.id}>
                   <td><div className="person"><span className="chip c-brand" style={{ width: 36, height: 36 }}><Icon name="asso" /></span><b className="ar" style={{ color: 'var(--ink)', fontSize: 14 }}>{a.nomAr}</b></div></td>
+                  <td>{pick(lang, { nomFr: a.provinceNomFr, nomAr: a.provinceNomAr })}</td>
                   <td><span className="pill">{a.etablissementCount}</span></td>
                   <td><span className="pill ok">{a.beneficiaryCount}</span></td>
                   {admin && <td><div className="row-actions">
@@ -56,28 +68,29 @@ export default function AssociationsPage() {
                   </div></td>}
                 </tr>
               ))}
-              {list && list.length === 0 && <tr><td colSpan={4} className="muted">{t('empty')}</td></tr>}
+              {list && list.length === 0 && <tr><td colSpan={5} className="muted">{t('empty')}</td></tr>}
             </tbody>
           </table>
         </div>
         <div className="pager"><span>{list?.length ?? 0} {t('results')}</span></div>
       </div>
-      {dlg?.kind === 'edit' && <EditDialog a={dlg.a} onClose={() => setDlg(null)} onSaved={() => { setDlg(null); toast(t('assocSaved')); load(); }} />}
+      {dlg?.kind === 'edit' && <EditDialog a={dlg.a} ref_={ref} onClose={() => setDlg(null)} onSaved={() => { setDlg(null); toast(t('assocSaved')); load(); }} />}
       {dlg?.kind === 'delete' && <DeleteDialog a={dlg.a} onClose={() => setDlg(null)} onDone={() => { setDlg(null); toast(t('assocDeleted')); load(); }} />}
     </>
   );
 }
 
-function EditDialog({ a, onClose, onSaved }: { a: Association | null; onClose: () => void; onSaved: () => void }) {
-  const { t, err } = useI18n();
+function EditDialog({ a, ref_, onClose, onSaved }: { a: Association | null; ref_: RefData; onClose: () => void; onSaved: () => void }) {
+  const { t, lang, err } = useI18n();
   const [nom, setNom] = useState(a?.nomAr ?? '');
+  const [provinceId, setProvinceId] = useState(String(a?.provinceId ?? ref_.provinces[0]?.id ?? ''));
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true); setError('');
     try {
-      if (a) await api('/associations/' + a.id, { method: 'PUT', body: { nomAr: nom } }); else await api('/associations', { method: 'POST', body: { nomAr: nom } });
+      if (a) await api('/associations/' + a.id, { method: 'PUT', body: { nomAr: nom, provinceId: Number(provinceId) } }); else await api('/associations', { method: 'POST', body: { nomAr: nom, provinceId: Number(provinceId) } });
       onSaved();
     } catch (ex) { setError(err(ex instanceof ApiError ? ex.code : 'INTERNAL')); }
     finally { setBusy(false); }
@@ -85,6 +98,11 @@ function EditDialog({ a, onClose, onSaved }: { a: Association | null; onClose: (
   return (
     <Modal title={a ? t('assocEdit') : t('assocAdd')} onClose={onClose}>
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <label>{t('colProvince')}
+          <select id="assoProvince" value={provinceId} onChange={(e) => setProvinceId(e.target.value)}>
+            {ref_.provinces.map((p) => <option key={p.id} value={p.id}>{pick(lang, p)}</option>)}
+          </select>
+        </label>
         <label>{t('assocName')}<input id="assoName" type="text" dir="rtl" required maxLength={255} value={nom} onChange={(e) => setNom(e.target.value)} autoFocus /></label>
         {error && <div className="alert bad" role="alert">{error}</div>}
         <div className="actions" style={{ marginTop: 0 }}>

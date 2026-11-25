@@ -136,6 +136,14 @@
 "licence": "13/762"
 },
 {
+"association": "الجمعية الخيرية الإسلامية",
+"province": "al-haouz",
+"categorie": "scolarisation",
+"nomAr": "دار الطالب زرقطن",
+"type": "دعم التمدرس",
+"licence": "09/290"
+},
+{
 "association": "الجمعية الخيرية الإسلامية دار الطالبة ابادو",
 "province": "al-haouz",
 "categorie": "scolarisation",
@@ -166,14 +174,6 @@
 "nomAr": "دار الطالب توامة",
 "type": "دعم التمدرس",
 "licence": "13/812"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "al-haouz",
-"categorie": "scolarisation",
-"nomAr": "دار الطالب زرقطن",
-"type": "دعم التمدرس",
-"licence": "09/290"
 },
 {
 "association": "الجمعية الخيرية الاسلامية لدار الطالب تحناوت",
@@ -1760,6 +1760,14 @@
 "licence": "21/1212"
 },
 {
+"association": "الجمعية الخيرية الإسلامية",
+"province": "chtouka-ait-baha",
+"categorie": "scolarisation",
+"nomAr": "دار الطالب بلفاع",
+"type": "دعم التمدرس",
+"licence": "15/997"
+},
+{
 "association": "الجمعية الخيرية الإسلامية دار الطالب آيت باها",
 "province": "chtouka-ait-baha",
 "categorie": "scolarisation",
@@ -1790,14 +1798,6 @@
 "nomAr": "دار الطالب ماسة",
 "type": "دعم التمدرس",
 "licence": "12/660"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "chtouka-ait-baha",
-"categorie": "scolarisation",
-"nomAr": "دار الطالب بلفاع",
-"type": "دعم التمدرس",
-"licence": "15/997"
 },
 {
 "association": "الحسن مكرم",
@@ -2904,6 +2904,14 @@
 "licence": "18/1116"
 },
 {
+"association": "الجمعية الخيرية الإسلامية",
+"province": "figuig",
+"categorie": "scolarisation",
+"nomAr": "دار الطالب فكيك",
+"type": "دعم التمدرس",
+"licence": "11/440"
+},
+{
 "association": "الجمعية الخيرية الإسلامية ببني تدجيت",
 "province": "figuig",
 "categorie": "scolarisation",
@@ -2934,14 +2942,6 @@
 "nomAr": "دار الطالب و الطالبة بوعرفة",
 "type": "دعم التمدرس",
 "licence": "09/375"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "figuig",
-"categorie": "scolarisation",
-"nomAr": "دار الطالب فكيك",
-"type": "دعم التمدرس",
-"licence": "11/440"
 },
 {
 "association": "الجمعية الخيرية لدار الطالب تالسينت",
@@ -3016,6 +3016,22 @@
 "licence": "14/949"
 },
 {
+"association": "الجمعية الخيرية الإسلامية",
+"province": "guelmim",
+"categorie": "scolarisation",
+"nomAr": "دار الأطفال إفران",
+"type": "دعم التمدرس",
+"licence": "09/89"
+},
+{
+"association": "الجمعية الخيرية الإسلامية",
+"province": "guelmim",
+"categorie": "enfants-difficiles",
+"nomAr": "دار الأطفال كلميم",
+"type": "دعم التمدرس 365",
+"licence": "09/195"
+},
+{
 "association": "الجمعية الخيرية الإسلامية افركط",
 "province": "guelmim",
 "categorie": "scolarisation",
@@ -3054,22 +3070,6 @@
 "nomAr": "دار الطالب فاصك",
 "type": "دعم التمدرس",
 "licence": "09/90"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "guelmim",
-"categorie": "scolarisation",
-"nomAr": "دار الأطفال إفران",
-"type": "دعم التمدرس",
-"licence": "09/89"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "guelmim",
-"categorie": "enfants-difficiles",
-"nomAr": "دار الأطفال كلميم",
-"type": "دعم التمدرس 365",
-"licence": "09/195"
 },
 {
 "association": "الجمعية الخيرية لتسيير دار الطالب والطالبة باداي",
@@ -3200,7 +3200,7 @@
 "licence": "13/913"
 },
 {
-"association": "جمعية المبادرة للتضامن الاجتماعي",
+"association": "جمعية المبادرة للتضامن الإجتماعي",
 "province": "hay-hassani",
 "categorie": "enfants-difficiles",
 "nomAr": "مؤسسة الرعاية الاجتماعية الحي الحسني",
@@ -3416,7 +3416,7 @@
 "licence": "11/500"
 },
 {
-"association": "جمعية المبادرة للتضامن الاجتماعي",
+"association": "جمعية المبادرة للتضامن الإجتماعي",
 "province": "kenitra",
 "categorie": "scolarisation",
 "nomAr": "المركب الاجتماعي دار الرائدات",
@@ -3470,6 +3470,14 @@
 "nomAr": "دار الأطفال الزحيلكة",
 "type": "دعم التمدرس",
 "licence": "21/1218"
+},
+{
+"association": "الجمعية الخيرية الإسلامية",
+"province": "khemisset",
+"categorie": "scolarisation",
+"nomAr": "دار الطالبة حد البراشوة",
+"type": "دعم التمدرس",
+"licence": "09/336"
 },
 {
 "association": "الجمعية الخيرية الإسلامية أفوس",
@@ -3550,14 +3558,6 @@
 "nomAr": "دار الطالبة تيداس",
 "type": "دعم التمدرس",
 "licence": "13/834"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "khemisset",
-"categorie": "scolarisation",
-"nomAr": "دار الطالبة حد البراشوة",
-"type": "دعم التمدرس",
-"licence": "09/336"
 },
 {
 "association": "الجمعية الخيرية الاسلامية دار الأطفال تيفلت",
@@ -4264,7 +4264,7 @@
 "licence": "09/401"
 },
 {
-"association": "جمعية دار البر والاحسان",
+"association": "جمعية دار البر والإحسان",
 "province": "marrakech",
 "categorie": "personnes-agees",
 "nomAr": "المركب الاجتماعي دار البر والاحسان",
@@ -4336,14 +4336,6 @@
 "licence": "23/1268"
 },
 {
-"association": "الجمعية الخيرية الإسلامية بمجاط",
-"province": "meknes",
-"categorie": "scolarisation",
-"nomAr": "دار الطالبة مجاط",
-"type": "دعم التمدرس",
-"licence": "13/816"
-},
-{
 "association": "الجمعية الخيرية الإسلامية لنزالة بني عمار",
 "province": "meknes",
 "categorie": "scolarisation",
@@ -4374,6 +4366,14 @@
 "nomAr": "دار الطالبة بوفكران",
 "type": "دعم التمدرس",
 "licence": "14/929"
+},
+{
+"association": "الجمعية الخيرية الاسلامية بمجاط",
+"province": "meknes",
+"categorie": "scolarisation",
+"nomAr": "دار الطالبة مجاط",
+"type": "دعم التمدرس",
+"licence": "13/816"
 },
 {
 "association": "الجمعية الخيرية الاسلامية مولاي ادريس زرهون",
@@ -4464,6 +4464,22 @@
 "licence": "14/943"
 },
 {
+"association": "الجمعية الخيرية الإسلامية",
+"province": "midelt",
+"categorie": "scolarisation",
+"nomAr": "دار الطالب و الطالبة الريش",
+"type": "دعم التمدرس",
+"licence": "09/211"
+},
+{
+"association": "الجمعية الخيرية الإسلامية",
+"province": "midelt",
+"categorie": "scolarisation",
+"nomAr": "دار الطالب و الطالبة كرامة",
+"type": "دعم التمدرس",
+"licence": "09/303"
+},
+{
 "association": "الجمعية الخيرية الإسلامية إتزار",
 "province": "midelt",
 "categorie": "scolarisation",
@@ -4502,22 +4518,6 @@
 "nomAr": "دار المسنين ميدلت",
 "type": "المسنين",
 "licence": "11/494"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "midelt",
-"categorie": "scolarisation",
-"nomAr": "دار الطالب و الطالبة الريش",
-"type": "دعم التمدرس",
-"licence": "09/211"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "midelt",
-"categorie": "scolarisation",
-"nomAr": "دار الطالب و الطالبة كرامة",
-"type": "دعم التمدرس",
-"licence": "09/303"
 },
 {
 "association": "جمعية أمال للتربية و التكوين تونفيت",
@@ -6336,20 +6336,20 @@
 "licence": "09/288"
 },
 {
+"association": "الجمعية الخيرية الإسلامية",
+"province": "tanger-assilah",
+"categorie": "scolarisation",
+"nomAr": "دار الأطفال أصيلة",
+"type": "دعم التمدرس",
+"licence": "09/238"
+},
+{
 "association": "الجمعية الخيرية الإسلامية طنجة",
 "province": "tanger-assilah",
 "categorie": "enfants-difficiles",
 "nomAr": "دار الأطفال للأميرة للاحسناء",
 "type": "دعم التمدرس 365",
 "licence": "09/265"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "tanger-assilah",
-"categorie": "scolarisation",
-"nomAr": "دار الأطفال أصيلة",
-"type": "دعم التمدرس",
-"licence": "09/238"
 },
 {
 "association": "الحمعية الخيرية الإسلامية طنجة",
@@ -6382,6 +6382,14 @@
 "nomAr": "مؤسسة دار الهناء لرعاية الأطفال المعاقين المعوزين",
 "type": "الأشخاص في وضعية إعاقة",
 "licence": "09/142"
+},
+{
+"association": "الجمعية الخيرية الإسلامية",
+"province": "taounate",
+"categorie": "scolarisation",
+"nomAr": "دار الطالبة كلاز",
+"type": "دعم التمدرس",
+"licence": "13/898"
 },
 {
 "association": "الجمعية الخيرية الإسلامية بتيسة",
@@ -6502,14 +6510,6 @@
 "nomAr": "دار الطالبة عين عائشة",
 "type": "دعم التمدرس",
 "licence": "09/353"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "taounate",
-"categorie": "scolarisation",
-"nomAr": "دار الطالبة كلاز",
-"type": "دعم التمدرس",
-"licence": "13/898"
 },
 {
 "association": "الجمعية الخيرية الاسلامية الغوازي",
@@ -7568,7 +7568,7 @@
 "licence": "13/912"
 },
 {
-"association": "جمعية البر والإحسان",
+"association": "جمعية البر و الإحسان",
 "province": "tetouan",
 "categorie": "personnes-agees",
 "nomAr": "مؤسسة الرعاية الاجتماعية البر و الإحسان",
@@ -7576,7 +7576,7 @@
 "licence": "13/876"
 },
 {
-"association": "جمعية البر والإحسان",
+"association": "جمعية البر و الإحسان",
 "province": "tetouan",
 "categorie": "enfants-difficiles",
 "nomAr": "نجوم الغد لرعاية الأيتام",
@@ -7598,6 +7598,14 @@
 "nomAr": "حضانة مهد البراءة لرعاية الأطفال المتخلى عنهم",
 "type": "الأطفال المتخلى عنهم",
 "licence": "21/1222"
+},
+{
+"association": "الجمعية الخيرية الإسلامية",
+"province": "tinghir",
+"categorie": "scolarisation",
+"nomAr": "دار الطالب والطالبة أسول",
+"type": "دعم التمدرس",
+"licence": "09/255"
 },
 {
 "association": "الجمعية الخيرية الإسلامية أكنيون",
@@ -7670,14 +7678,6 @@
 "nomAr": "دار الطالب إميضر",
 "type": "دعم التمدرس",
 "licence": "09/139"
-},
-{
-"association": "الجمعية الخيرية الاسلامية",
-"province": "tinghir",
-"categorie": "scolarisation",
-"nomAr": "دار الطالب والطالبة أسول",
-"type": "دعم التمدرس",
-"licence": "09/255"
 },
 {
 "association": "الجمعية الخيرية الاسلامية دار الفتاة اكنيون",
