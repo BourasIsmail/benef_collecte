@@ -115,7 +115,7 @@ export default function BeneficiariesPage() {
                   <td>{pick(lang, { nomFr: b.provinceNomFr, nomAr: b.provinceNomAr })}</td>
                   {write && <td><div className="row-actions">
                     <Link className="btn sm" href={`/beneficiaries/${b.id}`}><Icon name="edit" size={14} />{t('edit')}</Link>
-                    <button className="btn sm danger" type="button" onClick={() => setToArchive(b)}><Icon name="trash" size={14} />{t('archive')}</button>
+                    <button className="btn sm danger" type="button" onClick={() => setToArchive(b)}><Icon name="trash" size={14} />{t('delete')}</button>
                   </div></td>}
                 </tr>
               ))}
@@ -129,7 +129,7 @@ export default function BeneficiariesPage() {
         <Modal title={t('archiveTitle')} onClose={() => setToArchive(null)}>
           <p><b>{toArchive.nomFr} {toArchive.prenomFr}</b></p>
           <p className="muted">{t('archiveText')}</p>
-          <div className="actions"><button className="btn" type="button" onClick={() => setToArchive(null)}>{t('cancel')}</button><button className="btn danger" type="button" onClick={doArchive}>{t('archive')}</button></div>
+          <div className="actions"><button className="btn" type="button" onClick={() => setToArchive(null)}>{t('cancel')}</button><button className="btn danger" type="button" onClick={doArchive}>{t('delete')}</button></div>
         </Modal>
       )}
     </>
