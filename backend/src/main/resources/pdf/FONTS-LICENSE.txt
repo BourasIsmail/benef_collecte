@@ -1,0 +1,2 @@
+Manrope and Noto Sans Arabic are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
+They are embedded in the generated PDF files so that Arabic and Latin text render identically on every computer.

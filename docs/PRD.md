@@ -31,7 +31,7 @@ Comptes créés au premier démarrage (`<province>@entraide.ma`), mot de passe p
 10. Toute connexion, saisie, modification, export et action admin est journalisée.
 
 ## 5. Écrans
-Connexion · Changement de mot de passe obligatoire · Tableau de bord · Liste des bénéficiaires (recherche FR/AR, filtres, export CSV) · Ajouter / modifier un bénéficiaire avec contrôle de doublons en direct · Associations et Établissements (filtres ; ajout/modification/suppression/archivage réservés à l'admin ; consultation seule pour les provinces) · Ajouter un bénéficiaire : association, puis établissement · Utilisateurs (admin) · Journal d'audit (admin). Interface bilingue FR/AR avec RTL.
+Connexion · Changement de mot de passe obligatoire · Tableau de bord · Liste des bénéficiaires (recherche FR/AR, filtres, export CSV et PDF) · Ajouter / modifier un bénéficiaire avec contrôle de doublons en direct · Associations et Établissements (filtres ; ajout/modification/suppression/archivage réservés à l'admin ; consultation seule pour les provinces) · Ajouter un bénéficiaire : association, puis établissement · Utilisateurs (admin) · Journal d'audit (admin). Interface bilingue FR/AR avec RTL.
 
 ## 6. Hors périmètre v1
 Fusion de doublons, import de l'historique, création de comptes depuis l'interface, édition de la liste des catégories depuis l'interface, pièces jointes, notifications.

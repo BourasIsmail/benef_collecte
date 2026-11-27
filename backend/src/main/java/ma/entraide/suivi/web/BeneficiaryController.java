@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import ma.entraide.suivi.security.AppUserPrincipal;
 import ma.entraide.suivi.service.AuditService;
+import ma.entraide.suivi.service.BeneficiaryPdfService;
 import ma.entraide.suivi.service.BeneficiaryService;
 import ma.entraide.suivi.service.DedupService;
 import ma.entraide.suivi.web.Dtos.*;
@@ -19,8 +20,9 @@ import java.nio.charset.StandardCharsets;
 public class BeneficiaryController {
     private final BeneficiaryService service;
     private final AuditService audit;
+    private final BeneficiaryPdfService pdf;
 
-    public BeneficiaryController(BeneficiaryService service, AuditService audit) { this.service = service; this.audit = audit; }
+    public BeneficiaryController(BeneficiaryService service, AuditService audit, BeneficiaryPdfService pdf) { this.service = service; this.audit = audit; this.pdf = pdf; }
 
     @GetMapping
     public PageDto<BeneficiaryDto> list(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) String q,
@@ -71,6 +73,19 @@ public class BeneficiaryController {
                     csv(b.nomAr()), csv(b.prenomAr()), String.valueOf(b.dateNaissance()), b.sexe(), csv(b.cin())) + "\r\n");
         }
         w.flush();
+    }
+
+    /** PDF export (logo, bilingual title, beneficiaries grouped by association then établissement, signature area). */
+    @GetMapping("/export.pdf")
+    public void exportPdf(@AuthenticationPrincipal AppUserPrincipal me, @RequestParam(required = false) String q,
+                          @RequestParam(required = false) Long etablissementId, @RequestParam(required = false) Long categoryId,
+                          @RequestParam(required = false) Long associationId, @RequestParam(required = false) Long provinceId,
+                          @RequestParam(required = false) String sexe, HttpServletResponse res) throws IOException {
+        byte[] bytes = pdf.export(me, q, etablissementId, categoryId, associationId, provinceId, sexe);
+        res.setContentType("application/pdf");
+        res.setHeader("Content-Disposition", "attachment; filename=\"beneficiaires-" + java.time.LocalDate.now() + ".pdf\"");
+        res.setContentLength(bytes.length);
+        res.getOutputStream().write(bytes);
     }
 
     /** Quotes the value and neutralises spreadsheet formula injection. */

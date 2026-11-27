@@ -73,6 +73,7 @@ export default function BeneficiariesPage() {
         <div><h1>{t('nav_beneficiaries')}</h1><p className="sub">{t('listSub')}</p></div>
         <div className="toolbar">
           <a className="btn" href={'/api/beneficiaries/export.csv?' + params}><Icon name="download" size={16} />{t('exportCsv')}</a>
+          <a className="btn" href={'/api/beneficiaries/export.pdf?' + params} target="_blank" rel="noopener"><Icon name="download" size={16} />{t('exportPdf')}</a>
           {write && <Link className="btn primary" href="/beneficiaries/new"><Icon name="form" size={16} />{t('nav_new')}</Link>}
         </div>
       </div>

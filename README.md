@@ -104,7 +104,14 @@ Tableau de bord filtré par périmètre : totaux, filles/garçons, par province 
 Tous les tableaux (bénéficiaires, associations, établissements, utilisateurs, journal d'audit) ont une pagination (10, 20, 50 ou 100 lignes par page, première / précédente / suivante / dernière) et des filtres avec un bouton « Réinitialiser les filtres » : recherche, province, catégorie, association, établissement, sexe, rôle, état, action, utilisateur et période selon l'écran. Bénéficiaires et journal sont paginés côté serveur ; les autres listes, bornées (~1 000 lignes), côté navigateur.
 
 ### Export
-`Exporter (CSV)` : UTF-8 avec BOM (ouvre l'arabe correctement dans Excel), limité au périmètre, journalisé, protégé contre l'injection de formules.
+**CSV** : UTF-8 avec BOM (ouvre l'arabe correctement dans Excel), limité au périmètre, journalisé, protégé contre l'injection de formules.
+
+**PDF** (bouton « Exporter (PDF) » de la liste des bénéficiaires, `GET /api/beneficiaries/export.pdf`) : tous les bénéficiaires qui correspondent aux filtres, sur toutes les pages (pas seulement la page affichée), dans le périmètre de l'utilisateur.
+- Haut de page : logo, puis « Les bénéficiaires de la province : X » en français et en arabe, la région, la date d'édition, l'utilisateur et les totaux.
+- Tableau (A4 paysage) : N°, nom et prénom (FR), nom en arabe, **CIN (« Aucun » s'il n'existe pas)**, naissance, sexe ; en-têtes répétés sur chaque page.
+- Regroupement **par association puis par établissement** (bandes colorées avec les effectifs) ; une bande n'est jamais seule en bas de page. Quand le résultat couvre plusieurs provinces (admin ou compte régional sans filtre de province), le titre devient « Les bénéficiaires — toutes les provinces » (ou « de la région : X ») et une bande « Province » s'ajoute.
+- Bas de la dernière page : « Fait à … le … » et « Le responsable de la province » avec un cadre de signature. Pied de page : « Page n / N ».
+- Texte bilingue français / arabe. Les polices (Manrope et Noto Sans Arabic, licence SIL OFL) sont intégrées au fichier : l'arabe s'affiche pareil sur tous les postes. Chaque export est enregistré dans le journal d'audit (`EXPORT_PDF`).
 
 ## Sécurité
 - Cookie de session `HttpOnly`, `SameSite=Strict` (`Secure` si `APP_COOKIE_SECURE=true`, à activer dès que le site est servi en HTTPS). Pas de CSRF classique : API JSON uniquement, cookie `SameSite=Strict`.
