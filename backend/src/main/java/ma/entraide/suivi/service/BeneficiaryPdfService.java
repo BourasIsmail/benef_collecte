@@ -33,7 +33,7 @@ public class BeneficiaryPdfService {
         this.beneficiaries = beneficiaries; this.provinces = provinces; this.auth = auth; this.scope = scope; this.audit = audit;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public byte[] export(AppUserPrincipal me, String q, Long etabId, Long catId, Long assoId, Long provId, String sexe) {
         List<BeneficiaryDto> rows = beneficiaries.exportAll(me, q, etabId, catId, assoId, provId, sexe);
 
