@@ -7,10 +7,10 @@ import { useI18n } from '@/lib/i18n';
 import { Icon } from '@/lib/icons';
 import { canWrite, initials } from '@/lib/util';
 
-function Bars({ items, color, lang }: { items: Count[]; color: string; lang: string }) {
+function Bars({ items, color, lang, cols }: { items: Count[]; color: string; lang: string; cols?: boolean }) {
   const max = Math.max(1, ...items.map((i) => i.count));
   return (
-    <div className="bars">
+    <div className={cols ? 'bars cols' : 'bars'}>
       {items.map((i, k) => {
         const label = lang === 'ar' ? i.labelAr || i.label : i.label;
         return (
@@ -35,7 +35,7 @@ export default function Dashboard() {
   const gp = s.total ? Math.round((s.girls / s.total) * 100) : 0;
   const multiProvince = s.provinces > 1;
   const provItems = s.byProvince.slice(0, 12);
-  const lowItems = s.byProvince.slice(-12).reverse();
+  const lowItems = s.byProvince.slice(-30).reverse();
   const kpi = (chip: string, icon: string, v: string | number, l: string) => (
     <div className="card kpi"><span className={`chip ${chip}`}><Icon name={icon} size={22} /></span><div><div className="v">{v}</div><div className="l">{l}</div></div></div>
   );
@@ -76,12 +76,6 @@ export default function Dashboard() {
           <div className="head"><h2>{multiProvince ? t('byProvince') : t('byEtablissement')}</h2>{multiProvince && s.byProvince.length > provItems.length && <span>+{s.byProvince.length - provItems.length} {t('moreProvinces')}</span>}</div>
           <Bars items={multiProvince ? provItems : s.byEtablissement} color="var(--brand)" lang={lang} />
         </div>
-        {multiProvince && (
-          <div className="card">
-            <div className="head"><h2>{t('byProvinceLowest')}</h2></div>
-            <Bars items={lowItems} color="var(--sun)" lang={lang} />
-          </div>
-        )}
         <div className="card"><div className="head"><h2>{t('byCategory')}</h2></div><Bars items={s.etablissementsByCategory} color="var(--brand2)" lang={lang} /></div>
         <div className="card">
           <div className="head"><h2>{t('latest')}</h2></div>
@@ -96,6 +90,12 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      {multiProvince && (
+        <div className="card">
+          <div className="head"><h2>{t('byProvinceLowest')}</h2><span>{lowItems.length}</span></div>
+          <Bars items={lowItems} color="var(--sun)" lang={lang} cols />
+        </div>
+      )}
     </>
   );
 }
