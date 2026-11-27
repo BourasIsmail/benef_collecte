@@ -35,6 +35,7 @@ export default function Dashboard() {
   const gp = s.total ? Math.round((s.girls / s.total) * 100) : 0;
   const multiProvince = s.provinces > 1;
   const provItems = s.byProvince.slice(0, 12);
+  const lowItems = s.byProvince.slice(-12).reverse();
   const kpi = (chip: string, icon: string, v: string | number, l: string) => (
     <div className="card kpi"><span className={`chip ${chip}`}><Icon name={icon} size={22} /></span><div><div className="v">{v}</div><div className="l">{l}</div></div></div>
   );
@@ -75,6 +76,12 @@ export default function Dashboard() {
           <div className="head"><h2>{multiProvince ? t('byProvince') : t('byEtablissement')}</h2>{multiProvince && s.byProvince.length > provItems.length && <span>+{s.byProvince.length - provItems.length} {t('moreProvinces')}</span>}</div>
           <Bars items={multiProvince ? provItems : s.byEtablissement} color="var(--brand)" lang={lang} />
         </div>
+        {multiProvince && (
+          <div className="card">
+            <div className="head"><h2>{t('byProvinceLowest')}</h2></div>
+            <Bars items={lowItems} color="var(--sun)" lang={lang} />
+          </div>
+        )}
         <div className="card"><div className="head"><h2>{t('byCategory')}</h2></div><Bars items={s.etablissementsByCategory} color="var(--brand2)" lang={lang} /></div>
         <div className="card">
           <div className="head"><h2>{t('latest')}</h2></div>
