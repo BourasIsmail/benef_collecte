@@ -64,9 +64,15 @@ public class StatsService {
                 + "where c.actif = true group by c.id, c.nom_fr, c.nom_ar order by count(x.id) desc, c.id", v)
                 .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
 
+        // beneficiaries per category: the category is the one of the beneficiary's établissement
+        List<Count> benefByCat = rows("select c.nom_fr, c.nom_ar, count(x.id) from categories c "
+                + "left join (select b.id, e.category_id" + base + ") x on x.category_id = c.id "
+                + "where c.actif = true group by c.id, c.nom_fr, c.nom_ar order by count(x.id) desc, c.id", v)
+                .stream().map(r -> new Count((String) r[0], (String) r[1], num(r[2]))).toList();
+
         List<LatestDto> latest = rows("select b.id, b.nom_fr, b.prenom_fr, b.sexe, e.nom_ar" + base + " order by b.created_at desc, b.id desc limit 6", v)
                 .stream().map(r -> new LatestDto(num(r[0]), (String) r[1], (String) r[2], String.valueOf(r[3]), (String) r[4])).toList();
 
-        return new Stats(total, girls, total - girls, assoCount, etabCount, provCount, byProvince, byEtab, ageBands, byCat, latest);
+        return new Stats(total, girls, total - girls, assoCount, etabCount, provCount, byProvince, byEtab, ageBands, byCat, benefByCat, latest);
     }
 }

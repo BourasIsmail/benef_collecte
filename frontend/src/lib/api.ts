@@ -51,7 +51,7 @@ export interface CheckResult { key: string; exact: Match[]; similar: { match: Ma
 export interface Count { label: string; labelAr: string; count: number }
 export interface Stats {
   total: number; girls: number; boys: number; associations: number; etablissements: number; provinces: number;
-  byProvince: Count[]; byEtablissement: Count[]; ageBands: Count[]; etablissementsByCategory: Count[];
+  byProvince: Count[]; byEtablissement: Count[]; ageBands: Count[]; etablissementsByCategory: Count[]; beneficiariesByCategory: Count[];
   latest: { id: number; nomFr: string; prenomFr: string; sexe: string; etablissementNom: string }[];
 }
 export interface UserRow { id: number; email: string; role: Role; provinceNomFr?: string; regionNomFr?: string; enabled: boolean; mustChangePassword: boolean; lastLogin?: string }

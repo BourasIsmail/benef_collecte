@@ -68,6 +68,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="card"><div className="head"><h2>{t('ageBands')}</h2></div><Bars items={s.ageBands.map((a) => ({ ...a, label: `${a.label} ${t('ageYears')}`, labelAr: `${a.label} ${t('ageYears')}` }))} color="var(--sun)" lang={lang} /></div>
+        <div className="card"><div className="head"><h2>{t('benefByCategory')}</h2></div><Bars items={s.beneficiariesByCategory} color="var(--brand)" lang={lang} /></div>
       </div>
       <div className="grid g21">
         <div className="card">

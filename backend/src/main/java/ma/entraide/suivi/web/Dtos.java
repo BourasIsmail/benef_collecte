@@ -55,5 +55,5 @@ public final class Dtos {
     public record LatestDto(Long id, String nomFr, String prenomFr, String sexe, String etablissementNom) {}
     public record Stats(long total, long girls, long boys, long associations, long etablissements, long provinces,
                         List<Count> byProvince, List<Count> byEtablissement, List<Count> ageBands,
-                        List<Count> etablissementsByCategory, List<LatestDto> latest) {}
+                        List<Count> etablissementsByCategory, List<Count> beneficiariesByCategory, List<LatestDto> latest) {}
 }
